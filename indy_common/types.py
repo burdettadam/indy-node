@@ -24,7 +24,7 @@ from common.version import GenericVersion
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import ConstraintsEnum, CONSTRAINT_ID, AUTH_CONSTRAINTS, METADATA, \
     NEED_TO_BE_OWNER, SIG_COUNT, ROLE, OFF_LEDGER_SIGNATURE
-from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT
+from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT, CONTEXT_ATTRIBUTES_LIMIT
 from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     DATA, GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
     POOL_UPGRADE, POOL_CONFIG, \
@@ -34,12 +34,14 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     TAILS_HASH, TAILS_LOCATION, ID, REVOC_TYPE, TAG, CRED_DEF_ID, VALUE, \
     REVOC_REG_ENTRY, ISSUED, REVOC_REG_DEF_ID, REVOKED, ACCUM, PREV_ACCUM, \
     GET_REVOC_REG_DEF, GET_REVOC_REG, TIMESTAMP, \
-    GET_REVOC_REG_DELTA, FROM, TO, POOL_RESTART, DATETIME, VALIDATOR_INFO, SCHEMA_FROM, SCHEMA_NAME, SCHEMA_VERSION, \
+    GET_REVOC_REG_DELTA, FROM, TO, POOL_RESTART, DATETIME, VALIDATOR_INFO, \
+    SET_CONTEXT, GET_CONTEXT, CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT_ARRAY, CONTEXT_FROM, \
+    SCHEMA_FROM, SCHEMA_NAME, SCHEMA_VERSION, \
     SCHEMA_ATTR_NAMES, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, CLAIM_DEF_SCHEMA_REF, \
     CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE, AUTH_RULE, AUTH_RULES, CONSTRAINT, AUTH_ACTION, \
     AUTH_TYPE, \
     FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, RULES, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND
-from indy_common.version import SchemaVersion
+from indy_common.version import SchemaVersion, ContextVersion
 
 
 class Request(PRequest):
@@ -90,6 +92,27 @@ class SchemaField(MessageValidator):
             LimitedLengthStringField(max_length=NAME_FIELD_LIMIT),
             min_length=1,
             max_length=SCHEMA_ATTRIBUTES_LIMIT)),
+    )
+
+# Rich Schema
+# This should work if URIs are passed
+# FIXME This will break if dictionary entries are passed
+# FIXME Replace LimitedLengthStringField with something that can validate a context.
+class SetContextField(MessageValidator):
+    context = (
+        (CONTEXT_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (CONTEXT_VERSION, VersionField(version_cls=ContextVersion)),
+        (CONTEXT_CONTEXT_ARRAY, IterableField(
+            LimitedLengthStringField(max_length=NAME_FIELD_LIMIT),
+            min_length=1,
+            max_length=CONTEXT_ATTRIBUTES_LIMIT)),
+    )
+
+class GetContextField(MessageValidator):
+    context = (
+        (CONTEXT_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (CONTEXT_VERSION, VersionField(version_cls=ContextVersion)),
+        (ORIGIN, IdentifierField(optional=True))
     )
 
 
@@ -152,6 +175,21 @@ class ClientGetSchemaOperation(MessageValidator):
         (TXN_TYPE, ConstantField(GET_SCHEMA)),
         (SCHEMA_FROM, IdentifierField()),
         (DATA, GetSchemaField()),
+    )
+
+
+#Rich Schema
+class ClientSetContextOperation(MessageValidator):
+    context = (
+        (TXN_TYPE, ConstantField(SET_CONTEXT)),
+        (DATA, SetContextField()),
+    )
+
+class ClientGetContextOperation(MessageValidator):
+    context = (
+        (TXN_TYPE, ConstantField(GET_CONTEXT)),
+        (CONTEXT_FROM, IdentifierField()),
+        (DATA, GetContextField()),
     )
 
 
@@ -428,6 +466,8 @@ class ClientOperationField(PClientOperationField):
         GET_REVOC_REG_DEF: ClientGetRevocRegDefField(),
         GET_REVOC_REG: ClientGetRevocRegField(),
         GET_REVOC_REG_DELTA: ClientGetRevocRegDeltaField(),
+        SET_CONTEXT: ClientSetContextOperation(), #Rich Schema 
+        GET_CONTEXT: ClientGetContextOperation(),
     }
 
     # TODO: it is a workaround because INDY-338, `operations` must be a class
