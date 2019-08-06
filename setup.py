@@ -53,7 +53,7 @@ setup(
     install_requires=['indy-plenum==1.9.1.dev856',
                       'python-dateutil',
                       'timeout-decorator==0.4.0',
-                      'distro==1.3.0'],
+                      'distro==1.3.0', 'jsonschema'],
     setup_requires=['pytest-runner'],
     extras_require={
         'tests': tests_require
