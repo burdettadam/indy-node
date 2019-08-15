@@ -4,9 +4,9 @@ from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.constants import SET_CONTEXT
 
 from indy_common.req_utils import get_write_context_name, get_write_context_version, get_txn_context_name, \
-    get_txn_context_version, get_txn_context_data
+    get_txn_context_version, get_txn_context_data, get_txn_context_meta
 from indy_common.state.state_constants import MARKER_CONTEXT
-from plenum.common.constants import DOMAIN_LEDGER_ID, DATA
+from plenum.common.constants import DOMAIN_LEDGER_ID, DATA, META
 from plenum.common.exceptions import InvalidClientRequest
 
 from plenum.common.request import Request
@@ -18,7 +18,8 @@ from plenum.server.request_handlers.utils import encode_state_value
 from re import findall
 
 # defined in https://tools.ietf.org/html/rfc3986#page-50
-URI_REGEX = '^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?'
+# URI_REGEX = '^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?'
+URI_REGEX = r'^(?P<scheme>\w+):(?:(?:(?P<url>//[.\w]+)(?:(/(?P<path>[/\w]+)?)?))|(?:(?P<method>\w+):(?P<id>\w+)))'
 
 
 class ContextHandler(WriteRequestHandler):
@@ -30,19 +31,17 @@ class ContextHandler(WriteRequestHandler):
 
     def static_validation(self, request: Request):
         self._validate_request_type(request)
-        data = request.operation.get(DATA)
+        meta = request.operation[META]
+        validate_metadata(meta)
+        data = request.operation[DATA]
         validate_data(data)
-        validate_context(data['context'])
 
     def dynamic_validation(self, request: Request):
         # we can not add a Context with already existent NAME and VERSION
         # since a Context needs to be identified by seqNo
         self._validate_request_type(request)
-        identifier, req_id, operation = get_request_data(request)
-        context_name = get_write_context_name(request)
-        context_version = get_write_context_version(request)
-        path = make_state_path_for_context(identifier, context_name, context_version)
-        context, _, _ = self.get_from_state(path)
+        identifier = get_context_identifier(request)
+        context, _, _ = self.get_from_state(identifier)
         if context:
             self.write_req_validator.validate(request,
                                               [AuthActionEdit(txn_type=SET_CONTEXT,
@@ -66,20 +65,21 @@ class ContextHandler(WriteRequestHandler):
         self.state.set(path, value_bytes)
 
 
+def get_context_identifier(request: Request):
+    return request.operation[META]['id']
+
+
 def prepare_context_for_state(txn, path_only=False):
-    origin = get_from(txn)
-    context_name = get_txn_context_name(txn)
-    context_version = get_txn_context_version(txn)
+    meta = get_txn_context_meta(txn)
+    identifier = meta['id']
     value = {
+        META: meta,
         DATA: get_txn_context_data(txn)
     }
-    path = make_state_path_for_context(origin, context_name, context_version)
-    if path_only:
-        return path
     seq_no = get_seq_no(txn)
     txn_time = get_txn_time(txn)
     value_bytes = encode_state_value(value, seq_no, txn_time)
-    return path, value_bytes
+    return identifier, value_bytes
 
 
 def make_state_path_for_context(authors_did, context_name, context_version) -> bytes:
@@ -97,30 +97,35 @@ def _bad_uri(uri_string):
     return False
 
 
-def validate_context(context):
-    if isinstance(context, dict):
-        if "@context" not in context.keys():
-            raise Exception("Context missing '@context' property")
-        elif isinstance(context["@context"], list):
-            for ctx in context["@context"]:
-                if not isinstance(ctx, dict):
-                    if _bad_uri(ctx):
-                        raise Exception('@context URI {} badly formed', ctx)
-        elif isinstance(context["@context"], dict):
-            pass
-        elif isinstance(context['@context'], str):
-            if _bad_uri(context['@context']):
-                raise Exception('@context URI {} badly formed', context['@context'])
-        else:
-            raise Exception("'@context' value must be url, array, or object")
-    else:
-        raise Exception('context is not an object')
-
-
 def validate_data(data):
-    if not data['name']:
+    if isinstance(data, dict):
+        if "@context" not in data.keys():
+            raise Exception("data missing '@context' property")
+        else:
+            validate_context(data['@context'])
+    else:
+        raise Exception('data is not an object')
+
+
+def validate_metadata(meta):
+    if not meta['name']:
         raise Exception("Context transaction has no 'name' property")
-    if not data['version']:
+    if not meta['version']:
         raise Exception("Context transaction has no 'version' property")
-    if not data['context']:
-        raise Exception("Context transaction has no 'context' property")
+    if not meta['type']:
+        raise Exception("Context transaction has no 'type' property")
+
+
+def validate_context(context):
+    if isinstance(context, list):
+        for ctx in context:
+            if not isinstance(ctx, dict):
+                if _bad_uri(ctx):
+                    raise Exception('@context URI {} badly formed', ctx)
+    elif isinstance(context, dict):
+        pass
+    elif isinstance(context, str):
+        if _bad_uri(context):
+            raise Exception('@context URI {} badly formed', context)
+    else:
+        raise Exception("'@context' value must be url, array, or object")

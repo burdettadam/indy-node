@@ -1,128 +1,123 @@
 
 import pytest
-from indy_node.server.request_handlers.domain_req_handlers.context_handler import validate_data, validate_context, \
-    ContextHandler
+from plenum.common.constants import DATA
+
+from common.exceptions import LogicError
+
+from indy_node.server.request_handlers.domain_req_handlers.context_handler import validate_metadata, validate_data, \
+    ContextHandler, validate_context
 from plenum.common.request import Request
 from indy_node.test.context.helper import W3C_BASE_CONTEXT, W3C_EXAMPLE_V1_CONTEXT
 
 
-def test_validate_data_fail_on_empty():
+def test_validate_metadata_fail_on_empty():
     with pytest.raises(KeyError) as e:
-        validate_data({})
+        validate_metadata({})
     assert "name" in str(e.value)
 
 
-def test_validate_data_fail_no_name():
-    data = {
+def test_validate_metadata_fail_no_name():
+    meta = {
         "version": "2.5"
     }
     with pytest.raises(KeyError) as e:
-        validate_data(data)
+        validate_metadata(meta)
     assert "name" in str(e.value)
 
 
-def test_validate_data_fail_no_version():
-    data = {
+def test_validate_metadata_fail_no_version():
+    meta = {
         "name": "New Context"
     }
     with pytest.raises(KeyError) as e:
-        validate_data(data)
+        validate_metadata(meta)
     assert "version" in str(e.value)
 
 
-def test_validate_data_fail_no_context():
-    data = {
+def test_validate_metadata_fail_no_type():
+    meta = {
         "name": "New Context",
         "version": "5.2"
     }
     with pytest.raises(KeyError) as e:
-        validate_data(data)
-    assert "context" in str(e.value)
+        validate_metadata(meta)
+    assert "type" in str(e.value)
 
 
-def test_validate_context_fail_on_empty():
+def test_validate_data_fail_on_empty():
     with pytest.raises(Exception) as e:
-        validate_context({})
-    assert "Context missing '@context' property" in str(e.value)
+        validate_data({})
+    assert "data missing '@context' property" in str(e.value)
 
 
-def test_validate_context_fail_not_dict():
+def test_validate_data_fail_not_dict():
     with pytest.raises(Exception) as e:
-        validate_context("context")
-    assert "context is not an object" in str(e.value)
+        validate_data("context")
+    assert "data is not an object" in str(e.value)
 
 
-def test_validate_context_fail_no_context_property():
+def test_validate_data_fail_no_context_property():
     input_dict = {
         "name": "Thing"
     }
     with pytest.raises(Exception) as e:
-        validate_context(input_dict)
-    assert "Context missing '@context' property" in str(e.value)
+        validate_data(input_dict)
+    assert "data missing '@context' property" in str(e.value)
 
 
-@pytest.mark.skip("Until we find a string that fails the regex, or improve the test, this should be skipped")
+def test_validate_data_pass():
+    validate_data({"@context": "https://www.example.com"})
+
+
 def test_validate_context_fail_bad_uri():
-    input_dict = {
-        "@context": "2http:/..@#$"
-    }
+    context = "2http:/..@#$"
     with pytest.raises(Exception) as e:
-        validate_context(input_dict)
-    assert "fail" in str(e.value)
+        validate_context(context)
+    assert "2http:/..@#$" in str(e.value)
 
 
 def test_validate_context_fail_context_not_uri_or_array_or_object():
-    input_dict = {
-        "@context": 52
-    }
+    context = 52
     with pytest.raises(Exception) as e:
-        validate_context(input_dict)
+        validate_context(context)
     assert "'@context' value must be url, array, or object" in str(e.value)
 
 
 def test_validate_context_pass_value_is_dict():
-    input_dict = {
-        "@context": {
+    context = {
+        "favoriteColor": "https://example.com/vocab#favoriteColor"
+    }
+    validate_context(context)
+
+
+def test_validate_context_pass_value_is_list_with_dict_and_uri():
+    context = [
+        {
             "favoriteColor": "https://example.com/vocab#favoriteColor"
-        }
-    }
-    validate_context(input_dict)
+        },
+        "https://www.w3.org/ns/odrl.jsonld"
+    ]
+    validate_context(context)
 
 
-def test_validate_context_pass_value_is_list():
-    input_dict = {
-        "@context": [
-            {
-                "favoriteColor": "https://example.com/vocab#favoriteColor"
-            },
-            "https://www.w3.org/ns/odrl.jsonld"
-        ]
-    }
-    validate_context(input_dict)
+def test_validate_context_fail_value_is_list_with_dict_and_bad_uri():
+    context = [
+        {
+            "favoriteColor": "https://example.com/vocab#favoriteColor"
+        },
+        "this is a bad uri"
+    ]
+    with pytest.raises(Exception) as e:
+        validate_context(context)
+    assert "this is a bad uri" in str(e.value)
 
 
 def test_validate_context_pass_context_w3c_example_15():
-    input_dict = {
-        "@context": {
-            "referenceNumber": "https://example.com/vocab#referenceNumber",
-            "favoriteFood": "https://example.com/vocab#favoriteFood"
-        }
+    context = {
+        "referenceNumber": "https://example.com/vocab#referenceNumber",
+        "favoriteFood": "https://example.com/vocab#favoriteFood"
     }
-    validate_context(input_dict)
-
-
-def test_static_validation_pass_valid_transaction():
-    operation = {
-        "data": {
-            "name": "TestContext",
-            "version": 1,
-            "context_array": W3C_BASE_CONTEXT
-        },
-        "type": "200"
-    }
-    req = Request("test", 1, operation, "sig",)
-    ch = ContextHandler(None, None)
-    ch.static_validation(req)
+    validate_context(context)
 
 
 def test_validate_context_pass_context_w3c_base():
@@ -133,13 +128,19 @@ def test_validate_context_pass_context_w3c_base():
     validate_context(W3C_BASE_CONTEXT)
 
 
+def test_validate_context_pass_context_w3c_examples_v1():
+    # test for https://www.w3.org/2018/credentials/examples/v1
+    validate_context(W3C_EXAMPLE_V1_CONTEXT)
+
+
 def test_static_validation_pass_valid_transaction():
     operation = {
-        "data": {
+        "meta": {
+            "type": "context",
             "name": "TestContext",
-            "version": 1,
-            "context": W3C_BASE_CONTEXT
+            "version": 1
         },
+        DATA: W3C_BASE_CONTEXT,
         "type": "200"
     }
     req = Request("test", 1, operation, "sig",)
@@ -147,11 +148,60 @@ def test_static_validation_pass_valid_transaction():
     ch.static_validation(req)
 
 
-def test_validate_context_pass_context_w3c_examples_v1():
-    # test for https://www.w3.org/2018/credentials/examples/v1
-    validate_context(W3C_EXAMPLE_V1_CONTEXT)
+def test_static_validation_fail_invalid_type():
+    operation = {
+        "meta": {
+            "type": "context",
+            "name": "TestContext",
+            "version": 1
+        },
+        DATA: W3C_BASE_CONTEXT,
+        "type": "201"
+    }
+    req = Request("test", 1, operation, "sig",)
+    ch = ContextHandler(None, None)
+    with pytest.raises(LogicError):
+        ch.static_validation(req)
 
 
+def test_static_validation_fail_no_meta():
+    operation = {
+        DATA: W3C_BASE_CONTEXT,
+        "type": "200"
+    }
+    req = Request("test", 1, operation, "sig",)
+    ch = ContextHandler(None, None)
+    with pytest.raises(KeyError) as e:
+        ch.static_validation(req)
+    assert 'meta' in str(e.value)
 
 
+def test_static_validation_fail_no_data():
+    operation = {
+        "meta": {
+            "type": "context",
+            "name": "TestContext",
+            "version": 1
+        },
+        "type": "200"
+    }
+    req = Request("test", 1, operation, "sig",)
+    ch = ContextHandler(None, None)
+    with pytest.raises(KeyError) as e:
+        ch.static_validation(req)
+    assert DATA in str(e.value)
 
+
+def test_static_validation_fail_no_type():
+    operation = {
+        "meta": {
+            "type": "context",
+            "name": "TestContext",
+            "version": 1
+        },
+        DATA: W3C_BASE_CONTEXT
+    }
+    req = Request("test", 1, operation, "sig",)
+    ch = ContextHandler(None, None)
+    with pytest.raises(LogicError):
+        ch.static_validation(req)

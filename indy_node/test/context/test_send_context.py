@@ -6,7 +6,7 @@ from indy_common.authorize.auth_constraints import AuthConstraintForbidden
 #from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT
 from indy_common.constants import CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT
 from indy_node.test.context.helper import W3C_BASE_CONTEXT
-from indy_common.types import SetContextField
+from indy_common.types import ContextDataField
 from indy_node.test.api.helper import validate_write_reply, sdk_write_context_and_check
 from plenum.common.exceptions import RequestRejectedException
 from plenum.common.util import randomString
@@ -18,9 +18,10 @@ def test_send_context_pass(looper, sdk_pool_handle,
     rep = sdk_write_context_and_check(
         looper, sdk_pool_handle,
         sdk_wallet_endorser,
-        W3C_BASE_CONTEXT,
+        {"@context": "https://www.example.com"},
         "Base_Context",
-        "1.0"
+        "1.0",
+        "24mZ2FhDjWdVgs8pJSkaMY1"
     )
     data = rep[0][0]['operation']['data']
     assert data[CONTEXT_VERSION] == '1.0'

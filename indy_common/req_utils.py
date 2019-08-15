@@ -1,9 +1,9 @@
 from indy_common.constants import SCHEMA_NAME, SCHEMA_VERSION, SCHEMA_ATTR_NAMES, SCHEMA_FROM, \
-    CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT, CONTEXT_FROM, \
+    CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT, CONTEXT_ID, \
     CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_TAG, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_FROM, \
     CLAIM_DEF_TAG_DEFAULT, CLAIM_DEF_CL
 
-from plenum.common.constants import DATA
+from plenum.common.constants import DATA, META
 from plenum.common.request import Request
 from plenum.common.txn_util import get_payload_data
 
@@ -33,6 +33,10 @@ def get_write_context_data(req: Request):
     return req.operation[DATA]
 
 
+def get_txn_context_meta(txn):
+    return get_payload_data(txn)[META]
+
+
 def get_txn_context_data(txn):
     return get_payload_data(txn)[DATA]
 
@@ -45,8 +49,8 @@ def get_read_context_version(req: Request):
     return req.operation[DATA][CONTEXT_VERSION]
 
 
-def get_read_context_from(req: Request):
-    return req.operation[CONTEXT_FROM]
+def get_read_context_id(req: Request):
+    return req.operation[DATA][CONTEXT_ID]
 
 
 def get_reply_context_name(reply):
@@ -62,7 +66,7 @@ def get_reply_context_context(reply):
 
 
 def get_reply_context_from(reply):
-    return reply[CONTEXT_FROM]
+    return reply[CONTEXT_ID]
 
 
 # SCHEMA
