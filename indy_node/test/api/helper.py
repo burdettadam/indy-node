@@ -2,7 +2,10 @@ import json
 import base58
 
 from indy.anoncreds import issuer_create_schema
-from indy.ledger import build_schema_request
+from indy.ledger import build_schema_request, sign_request, submit_request
+
+from indy_common.constants import SET_CONTEXT
+from indy_common.state.state_constants import MARKER_CONTEXT
 from plenum.test.helper import sdk_get_reply, sdk_sign_and_submit_req, sdk_get_and_check_replies
 
 
@@ -217,6 +220,7 @@ def sdk_write_schema_and_check(looper, sdk_pool_handle, sdk_wallet_client,
     rep = sdk_get_and_check_replies(looper, [req])
     return rep
 
+
 def sdk_write_context(looper, sdk_pool_handle, sdk_wallet_steward, context_array=[], name="", version=""):
     _wh, did = sdk_wallet_steward
 
@@ -249,7 +253,7 @@ def sdk_write_context(looper, sdk_pool_handle, sdk_wallet_steward, context_array
 
 
 def sdk_write_context_and_check(looper, sdk_pool_handle, sdk_wallet_steward,
-                               context_array=[], name="", version=""):
+                                context_array=[], name="", version=""):
     _wh, did = sdk_wallet_steward
 
     '''_, context_json = looper.loop.run_until_complete(
@@ -276,7 +280,6 @@ def sdk_write_context_and_check(looper, sdk_pool_handle, sdk_wallet_steward,
 
     set_context_txn_json = json.dumps(raw_json)
 
-
     '''request = looper.loop.run_until_complete(
         build_schema_request(did, schema_json)
     )
@@ -284,3 +287,18 @@ def sdk_write_context_and_check(looper, sdk_pool_handle, sdk_wallet_steward,
     req = sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_steward, set_context_txn_json)
     rep = sdk_get_and_check_replies(looper, [req])
     return rep
+
+
+def write_txn(looper, sdk_pool_handle, sdk_wallet_handle, txn_json={}, path="", sign=False, check=False):
+    # create json
+
+    # TODO: add signature to passed in txn_json, use only sdk_submit_req
+    # TODO: remove sdk submit_req and use internal event bus..
+    if sign:
+        txn_json = sign_request(sdk_wallet_handle, sdk_wallet_handle[1], txn_json)
+    req = submit_request(sdk_pool_handle, sdk_wallet_handle, txn_json)
+    if check:
+        return sdk_get_and_check_replies(looper, [req])
+    else:
+        return json.dumps({'id': path}), \
+               sdk_get_reply(looper, req)[1]

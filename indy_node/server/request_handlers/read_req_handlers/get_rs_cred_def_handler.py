@@ -9,7 +9,7 @@ from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.read_request_handler import ReadRequestHandler
 
 
-class GetClaimDefHandler(ReadRequestHandler):
+class GetRsCredDefHandler(ReadRequestHandler):
 
     def __init__(self, database_manager: DatabaseManager):
         super().__init__(database_manager, GET_CLAIM_DEF, DOMAIN_LEDGER_ID)

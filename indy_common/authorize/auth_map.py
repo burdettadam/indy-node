@@ -5,7 +5,9 @@ from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_constraints import AuthConstraint, AuthConstraintOr, accepted_roles, IDENTITY_OWNER, \
     AuthConstraintForbidden
 from indy_common.constants import ENDORSER, POOL_CONFIG, VALIDATOR_INFO, POOL_UPGRADE, POOL_RESTART, NODE, \
-    CLAIM_DEF, SCHEMA, SET_CONTEXT, NYM, ROLE, AUTH_RULE, NETWORK_MONITOR, REVOC_REG_ENTRY, REVOC_REG_DEF, ATTRIB, AUTH_RULES
+    CLAIM_DEF, SCHEMA, \
+    SET_RS_MAPPING, SET_RS_SCHEMA, SET_RS_ENCODING, SET_RS_CRED_DEF, SET_RS_DID_DOC, SET_RS_PRES_DEF, SET_CONTEXT, \
+    NYM, ROLE, AUTH_RULE, NETWORK_MONITOR, REVOC_REG_ENTRY, REVOC_REG_DEF, ATTRIB, AUTH_RULES
 from plenum.common.constants import TRUSTEE, STEWARD, VERKEY, TXN_AUTHOR_AGREEMENT, TXN_AUTHOR_AGREEMENT_AML
 
 edit_role_actions = {}  # type: Dict[str, Dict[str, AuthActionEdit]]
@@ -69,14 +71,67 @@ edit_schema = AuthActionEdit(txn_type=SCHEMA,
                              new_value='*')
 
 add_context = AuthActionAdd(txn_type=SET_CONTEXT,
-                           field='*',
-                           value='*')
+                            field='*',
+                            value='*')
 
 edit_context = AuthActionEdit(txn_type=SET_CONTEXT,
-                             field='*',
-                             old_value='*',
-                             new_value='*')
+                              field='*',
+                              old_value='*',
+                              new_value='*')
 
+add_rs_schema = AuthActionAdd(txn_type=SET_RS_SCHEMA,
+                              field='*',
+                              value='*')
+
+edit_rs_schema = AuthActionEdit(txn_type=SET_RS_SCHEMA,
+                                field='*',
+                                old_value='*',
+                                new_value='*')
+
+add_rs_pres_def = AuthActionAdd(txn_type=SET_RS_PRES_DEF,
+                                field='*',
+                                value='*')
+
+edit_rs_pres_def = AuthActionEdit(txn_type=SET_RS_PRES_DEF,
+                                  field='*',
+                                  old_value='*',
+                                  new_value='*')
+
+add_rs_did_doc = AuthActionAdd(txn_type=SET_RS_DID_DOC,
+                               field='*',
+                               value='*')
+
+edit_rs_did_doc = AuthActionEdit(txn_type=SET_RS_DID_DOC,
+                                 field='*',
+                                 old_value='*',
+                                 new_value='*')
+
+add_rs_encoding = AuthActionAdd(txn_type=SET_RS_ENCODING,
+                                field='*',
+                                value='*')
+
+edit_rs_encoding = AuthActionEdit(txn_type=SET_RS_ENCODING,
+                                  field='*',
+                                  old_value='*',
+                                  new_value='*')
+
+add_rs_mapping = AuthActionAdd(txn_type=SET_RS_MAPPING,
+                               field='*',
+                               value='*')
+
+edit_rs_mapping = AuthActionEdit(txn_type=SET_RS_MAPPING,
+                                 field='*',
+                                 old_value='*',
+                                 new_value='*')
+
+add_rs_cred_def = AuthActionAdd(txn_type=SET_RS_CRED_DEF,
+                                field='*',
+                                value='*')
+
+edit_rs_cred_def = AuthActionEdit(txn_type=SET_RS_CRED_DEF,
+                                  field='*',
+                                  old_value='*',
+                                  new_value='*')
 
 add_claim_def = AuthActionAdd(txn_type=CLAIM_DEF,
                               field='*',
@@ -228,8 +283,22 @@ auth_map = OrderedDict([
     (edit_attrib.get_action_id(), owner_constraint),
     (add_schema.get_action_id(), endorser_or_steward_or_trustee_constraint),
     (edit_schema.get_action_id(), no_one_constraint),
+    # rich schemas ------------------------------------------------
     (add_context.get_action_id(), endorser_or_steward_or_trustee_constraint),
     (edit_context.get_action_id(), no_one_constraint),
+    (add_rs_cred_def.get_action_id(), endorser_or_steward_or_trustee_constraint),
+    (edit_rs_cred_def.get_action_id(), no_one_constraint),
+    (add_rs_did_doc.get_action_id(), endorser_or_steward_or_trustee_constraint),
+    (edit_rs_did_doc.get_action_id(), no_one_constraint),
+    (add_rs_encoding.get_action_id(), endorser_or_steward_or_trustee_constraint),
+    (edit_rs_encoding.get_action_id(), no_one_constraint),
+    (add_rs_mapping.get_action_id(), endorser_or_steward_or_trustee_constraint),
+    (edit_rs_mapping.get_action_id(), no_one_constraint),
+    (add_rs_schema.get_action_id(), endorser_or_steward_or_trustee_constraint),
+    (edit_rs_schema.get_action_id(), no_one_constraint),
+    (add_rs_pres_def.get_action_id(), endorser_or_steward_or_trustee_constraint),
+    (edit_rs_pres_def.get_action_id(), no_one_constraint),
+    # -------------------------------------------------------------
     (add_claim_def.get_action_id(), endorser_or_steward_or_trustee_constraint),
     (edit_claim_def.get_action_id(), owner_constraint),
     (adding_new_node.get_action_id(), steward_owner_constraint),

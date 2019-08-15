@@ -17,7 +17,7 @@ from plenum.server.request_handlers.handler_interfaces.write_request_handler imp
 from plenum.server.request_handlers.utils import encode_state_value
 
 
-class ClaimDefHandler(WriteRequestHandler):
+class RsCredDefHandler(WriteRequestHandler):
 
     def __init__(self, database_manager: DatabaseManager,
                  write_req_validator: WriteRequestValidator):

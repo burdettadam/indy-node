@@ -103,7 +103,8 @@ PACKAGES_TO_HOLD = ['indy-plenum', 'indy-node', 'python3-indy-crypto', 'libindy-
 authPolicy = CONFIG_LEDGER_AUTH_POLICY
 
 SCHEMA_ATTRIBUTES_LIMIT = 125
-#Rich Schema
+# Rich Schema
 # FIX remove this limit when the new context validator is written
 CONTEXT_ATTRIBUTES_LIMIT = 125
+JSON_LD_LIMIT = 125
 

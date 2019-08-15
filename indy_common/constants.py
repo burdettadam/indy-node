@@ -11,25 +11,48 @@ Environment = NamedTuple("Environment", [
 ])
 
 # --------------Rich Schema----------------
+RS_META = 'meta'
+RS_META_NAME = 'name'
+RS_META_TYPE = 'type'
+RS_META_VERSION = 'version'
+RS_META_ID = 'id'
+RS_DATA = 'data'
+RS_JSON_LD_ID = '@id'
 # SCHEMA
-RS_SCHEMA_LABEL = "@label"
-RS_SCHEMA_VERSION = "version"
 RS_SCHEMA_CONTEXT = "@context"
 RS_SCHEMA_TYPE = "@type"
-RS_SCHEMA_EXPANDED_DOCUMENT = "@properties"
-RS_SCHEMA_FROM = "dest"
-RS_SCHEMA_ID = "@id"
-RS_SCHEMA = "schema"
+RS_SCHEMA_DOCUMENT = "properties"
+RS_SCHEMA_FROM = "author"
 # CONTEXT
 CONTEXT_NAME = "name"
 CONTEXT_VERSION = "version"
 CONTEXT_CONTEXT_ARRAY = "context_array"
-CONTEXT_FROM = "dest"
+CONTEXT_FROM = "author"
 # MAPPING
+RS_MAPPING_LABEL = "label"
+RS_MAPPING_TYPE = "@type"
+RS_MAPPING_DOCUMENT = "properties"
+RS_MAPPING_CONTEXT = "@context"
 # ENCODING
+RS_ENCODING_LABEL = "label"
+RS_ENCODING_TYPE = "@type"
+RS_ENCODING_DOCUMENT = "properties"
+RS_ENCODING_CONTEXT = "@context"
 # DID_DOC
+RS_DID_DOC_LABEL = "label"
+RS_DID_DOC_TYPE = "@type"
+RS_DID_DOC_DOCUMENT = "properties"
+RS_DID_DOC_CONTEXT = "@context"
 # CRED_DEF
+RS_CRED_DEF_LABEL = "label"
+RS_CRED_DEF_TYPE = "@type"
+RS_CRED_DEF_DOCUMENT = "properties"
+RS_CRED_DEF_CONTEXT = "@context"
 # PRES_DEF
+RS_PRES_DEF_LABEL = "label"
+RS_PRES_DEF_TYPE = "@type"
+RS_PRES_DEF_DOCUMENT = "@properties"
+RS_PRES_DEF_CONTEXT = "@context"
 # ------------------------------------------
 
 # SCHEMA
@@ -168,7 +191,6 @@ NODE = IndyTransactions.NODE.value
 NYM = IndyTransactions.NYM.value
 ATTRIB = IndyTransactions.ATTRIB.value
 SCHEMA = IndyTransactions.SCHEMA.value
-SET_CONTEXT = IndyTransactions.SET_CONTEXT.value
 CLAIM_DEF = IndyTransactions.CLAIM_DEF.value
 REVOC_REG_DEF = IndyTransactions.REVOC_REG_DEF.value
 REVOC_REG_ENTRY = IndyTransactions.REVOC_REG_ENTRY.value
@@ -196,7 +218,8 @@ SET_RS_DID_DOC = IndyTransactions.SET_RS_DID_DOC.value
 GET_RS_DID_DOC = IndyTransactions.GET_RS_DID_DOC.value
 SET_RS_PRES_DEF = IndyTransactions.SET_RS_PRES_DEF.value
 GET_RS_PRES_DEF = IndyTransactions.GET_RS_PRES_DEF.value
-
+SET_RS_CRED_DEF = IndyTransactions.SET_RS_PRES_DEF.value
+GET_RS_CRED_DEF = IndyTransactions.GET_RS_PRES_DEF.value
 
 POOL_UPGRADE = IndyTransactions.POOL_UPGRADE.value
 NODE_UPGRADE = IndyTransactions.NODE_UPGRADE.value

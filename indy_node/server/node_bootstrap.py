@@ -19,7 +19,14 @@ from indy_node.server.request_handlers.read_req_handlers.get_auth_rule_handler i
 from indy_node.server.request_handlers.domain_req_handlers.claim_def_handler import ClaimDefHandler
 from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_entry_handler import RevocRegEntryHandler
 from indy_node.server.request_handlers.domain_req_handlers.schema_handler import SchemaHandler
+# Rich Schema write handlers
 from indy_node.server.request_handlers.domain_req_handlers.context_handler import ContextHandler
+from indy_node.server.request_handlers.domain_req_handlers.rs_cred_def_handler import RsCredDefHandler
+from indy_node.server.request_handlers.domain_req_handlers.rs_did_doc_handler import RsDidDocHandler
+from indy_node.server.request_handlers.domain_req_handlers.rs_encoding_handler import RsEncodingHandler
+from indy_node.server.request_handlers.domain_req_handlers.rs_mapping_handler import RsMappingHandler
+from indy_node.server.request_handlers.domain_req_handlers.rs_pres_def_handler import RsPresDefHandler
+from indy_node.server.request_handlers.domain_req_handlers.rs_schema_handler import RsSchemaHandler
 
 from indy_node.server.request_handlers.domain_req_handlers.attribute_handler import AttributeHandler
 from indy_node.server.request_handlers.domain_req_handlers.nym_handler import NymHandler
@@ -39,7 +46,14 @@ from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_def_handl
 from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_delta_handler import GetRevocRegDeltaHandler
 from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_handler import GetRevocRegHandler
 from indy_node.server.request_handlers.read_req_handlers.get_schema_handler import GetSchemaHandler
+# Rich Schema get handlers
 from indy_node.server.request_handlers.read_req_handlers.get_context_handler import GetContextHandler
+from indy_node.server.request_handlers.read_req_handlers.get_rs_cred_def_handler import GetRsCredDefHandler
+from indy_node.server.request_handlers.read_req_handlers.get_rs_did_doc_handler import GetRsDidDocHandler
+from indy_node.server.request_handlers.read_req_handlers.get_rs_encoding_handler import GetRsEncodingHandler
+from indy_node.server.request_handlers.read_req_handlers.get_rs_mapping_handler import GetRsMappingHandler
+from indy_node.server.request_handlers.read_req_handlers.get_rs_pres_def_handler import GetRsPresDefHandler
+from indy_node.server.request_handlers.read_req_handlers.get_rs_schema_handler import GetRsSchemaHandler
 
 from indy_node.server.restarter import Restarter
 from indy_node.server.upgrader import Upgrader
@@ -96,12 +110,20 @@ class NodeBootstrap(PNodeBootstrap):
         get_nym_handler = GetNymHandler(database_manager=self.node.db_manager)
         get_attribute_handler = GetAttributeHandler(database_manager=self.node.db_manager)
         get_schema_handler = GetSchemaHandler(database_manager=self.node.db_manager)
-        get_context_handler = GetContextHandler(database_manager=self.node.db_manager)
         get_claim_def_handler = GetClaimDefHandler(database_manager=self.node.db_manager)
         get_revoc_reg_def_handler = GetRevocRegDefHandler(database_manager=self.node.db_manager)
         get_revoc_reg_handler = GetRevocRegHandler(database_manager=self.node.db_manager)
         get_revoc_reg_delta_handler = GetRevocRegDeltaHandler(database_manager=self.node.db_manager,
                                                               get_revocation_strategy=RevocRegDefHandler.get_revocation_strategy)
+        # Rich Schema
+        get_context_handler = GetContextHandler(database_manager=self.node.db_manager)
+        _get_rs_did_doc_handler = GetRsDidDocHandler(database_manager=self.node.db_manager)
+        _get_rs_encoder_handler = GetRsEncodingHandler(database_manager=self.node.db_manager)
+        _get_rs_mapping_handler = GetRsMappingHandler(database_manager=self.node.db_manager)
+        _get_rs_pres_def_handler = GetRsPresDefHandler(database_manager=self.node.db_manager)
+        _get_rs_cred_def_handler = GetRsCredDefHandler(database_manager=self.node.db_manager)
+        _get_rs_schema_handler = GetRsSchemaHandler(database_manager=self.node.db_manager)
+
         # Write handlers
         nym_handler = NymHandler(config=self.node.config,
                                  database_manager=self.node.db_manager,
@@ -110,8 +132,6 @@ class NodeBootstrap(PNodeBootstrap):
                                           write_req_validator=self.node.write_req_validator)
         schema_handler = SchemaHandler(database_manager=self.node.db_manager,
                                        write_req_validator=self.node.write_req_validator)
-        context_handler = ContextHandler(database_manager=self.node.db_manager,
-                                       write_req_validator=self.node.write_req_validator)
         claim_def_handler = ClaimDefHandler(database_manager=self.node.db_manager,
                                             write_req_validator=self.node.write_req_validator)
         revoc_reg_def_handler = RevocRegDefHandler(database_manager=self.node.db_manager,
@@ -119,25 +139,55 @@ class NodeBootstrap(PNodeBootstrap):
         revoc_reg_entry_handler = RevocRegEntryHandler(database_manager=self.node.db_manager,
                                                        write_req_validator=self.node.write_req_validator,
                                                        get_revocation_strategy=RevocRegDefHandler.get_revocation_strategy)
+        # Rich Schema
+        context_handler = ContextHandler(database_manager=self.node.db_manager,
+                                         write_req_validator=self.node.write_req_validator)
+        '''_rs_did_doc_handler = RsDidDocHandler(database_manager=self.node.db_manager,
+                                              write_req_validator=self.node.write_req_validator)
+        _rs_encoding_handler = RsEncodingHandler(database_manager=self.node.db_manager,
+                                                 write_req_validator=self.node.write_req_validator)
+        _rs_mapping_handler = RsMappingHandler(database_manager=self.node.db_manager,
+                                               write_req_validator=self.node.write_req_validator)
+        _rs_cred_def_handler = RsCredDefHandler(database_manager=self.node.db_manager,
+                                                write_req_validator=self.node.write_req_validator)
+        _rs_pres_def_handler = RsPresDefHandler(database_manager=self.node.db_manager,
+                                                write_req_validator=self.node.write_req_validator)'''
+        _rs_schema_handler = RsSchemaHandler(database_manager=self.node.db_manager,
+                                             write_req_validator=self.node.write_req_validator)
+
         # Register write handlers
         self.node.write_manager.register_req_handler(nym_handler)
         self.node.write_manager.register_req_handler(attrib_handler)
         self.node.write_manager.register_req_handler(schema_handler)
-        self.node.write_manager.register_req_handler(context_handler)
         self.node.write_manager.register_req_handler(claim_def_handler)
         self.node.write_manager.register_req_handler(revoc_reg_def_handler)
         self.node.write_manager.register_req_handler(revoc_reg_entry_handler)
+        # Rich Schema
+        self.node.write_manager.register_req_handler(context_handler)
+        self.node.write_manager.register_req_handler(_rs_cred_def_handler)
+        self.node.write_manager.register_req_handler(_rs_did_doc_handler)
+        self.node.write_manager.register_req_handler(_rs_encoding_handler)
+        self.node.write_manager.register_req_handler(_rs_mapping_handler)
+        self.node.write_manager.register_req_handler(_rs_pres_def_handler)
+        self.node.write_manager.register_req_handler(_rs_schema_handler)
         # Additional handler for idCache
         self.register_idr_cache_nym_handler()
         # Register read handlers
         self.node.read_manager.register_req_handler(get_nym_handler)
         self.node.read_manager.register_req_handler(get_attribute_handler)
         self.node.read_manager.register_req_handler(get_schema_handler)
-        self.node.read_manager.register_req_handler(get_context_handler)
         self.node.read_manager.register_req_handler(get_claim_def_handler)
         self.node.read_manager.register_req_handler(get_revoc_reg_def_handler)
         self.node.read_manager.register_req_handler(get_revoc_reg_handler)
         self.node.read_manager.register_req_handler(get_revoc_reg_delta_handler)
+        # Rich Schema
+        self.node.read_manager.register_req_handler(get_context_handler)
+        self.node.read_manager.register_req_handler(_get_rs_mapping_handler)
+        self.node.read_manager.register_req_handler(_get_rs_encoder_handler)
+        self.node.read_manager.register_req_handler(_get_rs_cred_def_handler)
+        self.node.read_manager.register_req_handler(_get_rs_did_doc_handler)
+        self.node.read_manager.register_req_handler(_get_rs_pres_def_handler)
+        self.node.read_manager.register_req_handler(_get_rs_schema_handler)
 
     def register_config_req_handlers(self):
         # Read handlers

@@ -7,11 +7,11 @@ from indy_node.server.request_handlers.domain_req_handlers.rs_mapping_handler im
 
 def test_validate_rs_mapping_fail_on_empty():
     with pytest.raises(Exception):
-        RsMappingHandler._validate_context({})
+        RsMappingHandler._validate({})
 
 
-def test_validate_rs_mapping_fail_no_context_property():
+def test_validate_rs_mapping():
     input_dict = {}
     with pytest.raises(Exception):
-        RsMappingHandler._validate_context(input_dict)
+        RsMappingHandler._validate(input_dict)
 

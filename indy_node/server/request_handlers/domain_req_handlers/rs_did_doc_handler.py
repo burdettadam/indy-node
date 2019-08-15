@@ -17,7 +17,7 @@ from plenum.server.request_handlers.nym_handler import NymHandler as PNymHandler
 from plenum.server.request_handlers.utils import nym_to_state_key, get_nym_details
 
 
-class NymHandler(PNymHandler):
+class RsDidDocHandler(PNymHandler):
     state_serializer = domain_state_serializer
 
     def __init__(self, config, database_manager: DatabaseManager,
