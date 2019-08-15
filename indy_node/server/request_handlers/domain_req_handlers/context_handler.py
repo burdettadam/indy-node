@@ -15,16 +15,38 @@ from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
 from plenum.server.request_handlers.utils import encode_state_value
 
+from re import findall
+
+# defined in https://tools.ietf.org/html/rfc3986#page-50
+URI_REGEX = '^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?'
 
 class ContextHandler(WriteRequestHandler):
 
+
+    @staticmethod
+    def _bad_uri(uri_string):
+        url = findall(URI_REGEX, uri_string)
+        if not url:
+            return True
+        return False
+
+    @staticmethod
     def _validate_context(context_array):
         if isinstance(context_array, dict):
-            assert "@context" in context_array.keys()
-            if not isinstance(context_array["@context"], dict):
-                raise Exception
+            if "@context" not in context_array.keys():
+                raise Exception("Context missing '@context' property")
+            if isinstance(context_array["@context"], list):
+                for ctx in context_array["@context"]:
+                    if not isinstance(ctx,dict):
+                        if ContextHandler._bad_uri(ctx):
+                            raise Exception('@context URI badly formed')
+            else:
+                if isinstance(context_array["@context"], dict):
+                    pass
+                else:
+                    raise Exception("'@context' value must be list or dict")
         else:
-            raise Exception
+            raise Exception('context is not a dict')
 
     def __init__(self, database_manager: DatabaseManager,
                  write_req_validator: WriteRequestValidator):
@@ -33,9 +55,11 @@ class ContextHandler(WriteRequestHandler):
 
     def static_validation(self, request: Request):
         self._validate_request_type(request)
-        assert request.operation.name
-        assert request.operation.version
-        _validate_context(request.operation.context_array)
+        if not request.operation['data']['name']:
+            raise Exception("Context transaction has no 'name' property")
+        if not request.operation['data']['version']:
+            raise Exception("Context transaction has no 'version' property")
+        ContextHandler._validate_context(request.operation['data']['context_array'])
 
 
     def dynamic_validation(self, request: Request):
