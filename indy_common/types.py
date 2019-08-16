@@ -3,7 +3,7 @@ from copy import deepcopy
 from hashlib import sha256
 
 from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, \
-    VERSION, FORCE, ORIGIN, OPERATION_SCHEMA_IS_STRICT, SCHEMA_IS_STRICT
+    VERSION, FORCE, ORIGIN, OPERATION_SCHEMA_IS_STRICT, SCHEMA_IS_STRICT, META
 from plenum.common.messages.client_request import ClientMessageValidator as PClientMessageValidator
 from plenum.common.messages.client_request import ClientOperationField as PClientOperationField
 from plenum.common.messages.fields import ConstantField, IdentifierField, \
@@ -35,12 +35,12 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     REVOC_REG_ENTRY, ISSUED, REVOC_REG_DEF_ID, REVOKED, ACCUM, PREV_ACCUM, \
     GET_REVOC_REG_DEF, GET_REVOC_REG, TIMESTAMP, \
     GET_REVOC_REG_DELTA, FROM, TO, POOL_RESTART, DATETIME, VALIDATOR_INFO, \
-    SET_CONTEXT, GET_CONTEXT, CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT_ARRAY, CONTEXT_FROM, \
+    SET_CONTEXT, GET_CONTEXT, CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT, CONTEXT_ID, \
     SCHEMA_FROM, SCHEMA_NAME, SCHEMA_VERSION, \
     SCHEMA_ATTR_NAMES, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, CLAIM_DEF_SCHEMA_REF, \
     CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE, AUTH_RULE, AUTH_RULES, CONSTRAINT, AUTH_ACTION, \
     AUTH_TYPE, \
-    FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, RULES, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND
+    FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, RULES, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, CONTEXT_TYPE, RS_TYPE
 from indy_common.version import SchemaVersion, ContextVersion
 
 
@@ -99,19 +99,26 @@ class SchemaField(MessageValidator):
 # This should work if URIs are passed
 # FIXME This will break if dictionary entries are passed
 # FIXME Replace LimitedLengthStringField with something that can validate a context.
-class SetContextField(MessageValidator):
+class ContextDataField(MessageValidator):
     context = (
-        (CONTEXT_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
-        (CONTEXT_VERSION, VersionField(version_cls=ContextVersion)),
-        (CONTEXT_CONTEXT_ARRAY, IterableField(
+        (CONTEXT_CONTEXT, IterableField(
             LimitedLengthStringField(max_length=NAME_FIELD_LIMIT),
             min_length=1,
             max_length=CONTEXT_ATTRIBUTES_LIMIT)),
     )
 
 
+
+class ContextMetaField(MessageValidator):
+    schema = (
+        (CONTEXT_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (CONTEXT_VERSION, VersionField(version_cls=ContextVersion)),
+        (RS_TYPE, ConstantField(CONTEXT_TYPE)),
+    )
+
+
 class GetContextField(MessageValidator):
-    context = (
+    schema = (
         (CONTEXT_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
         (CONTEXT_VERSION, VersionField(version_cls=ContextVersion)),
         (ORIGIN, IdentifierField(optional=True))
@@ -182,16 +189,17 @@ class ClientGetSchemaOperation(MessageValidator):
 
 # Rich Schema
 class ClientSetContextOperation(MessageValidator):
-    context = (
+    schema = (
         (TXN_TYPE, ConstantField(SET_CONTEXT)),
-        (DATA, SetContextField()),
+        (META, ContextMetaField()),
+        (DATA, ContextDataField()),
     )
 
 
 class ClientGetContextOperation(MessageValidator):
-    context = (
+    schema = (
         (TXN_TYPE, ConstantField(GET_CONTEXT)),
-        (CONTEXT_FROM, IdentifierField()),
+        (CONTEXT_ID, IdentifierField()),
         (DATA, GetContextField()),
     )
 

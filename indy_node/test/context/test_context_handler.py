@@ -1,49 +1,123 @@
 
 import pytest
-from indy_node.server.request_handlers.domain_req_handlers.context_handler import ContextHandler
+from plenum.common.constants import DATA
+
+from common.exceptions import LogicError
+
+from indy_node.server.request_handlers.domain_req_handlers.context_handler import validate_metadata, validate_data, \
+    ContextHandler, validate_context
+from plenum.common.request import Request
+from indy_node.test.context.helper import W3C_BASE_CONTEXT, W3C_EXAMPLE_V1_CONTEXT
 
 
-def test_validate_context_fail_on_empty():
+def test_validate_metadata_fail_on_empty():
+    with pytest.raises(KeyError) as e:
+        validate_metadata({})
+    assert "name" in str(e.value)
+
+
+def test_validate_metadata_fail_no_name():
+    meta = {
+        "version": "2.5"
+    }
+    with pytest.raises(KeyError) as e:
+        validate_metadata(meta)
+    assert "name" in str(e.value)
+
+
+def test_validate_metadata_fail_no_version():
+    meta = {
+        "name": "New Context"
+    }
+    with pytest.raises(KeyError) as e:
+        validate_metadata(meta)
+    assert "version" in str(e.value)
+
+
+def test_validate_metadata_fail_no_type():
+    meta = {
+        "name": "New Context",
+        "version": "5.2"
+    }
+    with pytest.raises(KeyError) as e:
+        validate_metadata(meta)
+    assert "type" in str(e.value)
+
+
+def test_validate_data_fail_on_empty():
     with pytest.raises(Exception) as e:
-        ContextHandler._validate_context({})
-    assert "Context missing '@context' property" in str(e.value)
+        validate_data({})
+    assert "data missing '@context' property" in str(e.value)
 
 
-def test_validate_context_fail_no_context_property():
+def test_validate_data_fail_not_dict():
+    with pytest.raises(Exception) as e:
+        validate_data("context")
+    assert "data is not an object" in str(e.value)
+
+
+def test_validate_data_fail_no_context_property():
     input_dict = {
         "name": "Thing"
     }
     with pytest.raises(Exception) as e:
-        ContextHandler._validate_context(input_dict)
-    assert "Context missing '@context' property" in str(e.value)
+        validate_data(input_dict)
+    assert "data missing '@context' property" in str(e.value)
 
 
-def test_validate_context_fail_context_not_dict_or_list():
-    input_dict = {
-        "@context": "Thing"
-    }
+def test_validate_data_pass():
+    validate_data({"@context": "https://www.example.com"})
+
+
+def test_validate_context_fail_bad_uri():
+    context = "2http:/..@#$"
     with pytest.raises(Exception) as e:
-        ContextHandler._validate_context(input_dict)
-    assert "'@context' value must be list or dict" in str(e.value)
+        validate_context(context)
+    assert "2http:/..@#$" in str(e.value)
 
 
-def test_validate_context_pass_context_single_name_value():
-    input_dict = {
-        "@context": {
-            "favoriteColor": "https://example.com/vocab#favoriteColor"
-        }
+def test_validate_context_fail_context_not_uri_or_array_or_object():
+    context = 52
+    with pytest.raises(Exception) as e:
+        validate_context(context)
+    assert "'@context' value must be url, array, or object" in str(e.value)
+
+
+def test_validate_context_pass_value_is_dict():
+    context = {
+        "favoriteColor": "https://example.com/vocab#favoriteColor"
     }
-    ContextHandler._validate_context(input_dict)
+    validate_context(context)
+
+
+def test_validate_context_pass_value_is_list_with_dict_and_uri():
+    context = [
+        {
+            "favoriteColor": "https://example.com/vocab#favoriteColor"
+        },
+        "https://www.w3.org/ns/odrl.jsonld"
+    ]
+    validate_context(context)
+
+
+def test_validate_context_fail_value_is_list_with_dict_and_bad_uri():
+    context = [
+        {
+            "favoriteColor": "https://example.com/vocab#favoriteColor"
+        },
+        "this is a bad uri"
+    ]
+    with pytest.raises(Exception) as e:
+        validate_context(context)
+    assert "this is a bad uri" in str(e.value)
 
 
 def test_validate_context_pass_context_w3c_example_15():
-    input_dict = {
-        "@context": {
-            "referenceNumber": "https://example.com/vocab#referenceNumber",
-            "favoriteFood": "https://example.com/vocab#favoriteFood"
-        }
+    context = {
+        "referenceNumber": "https://example.com/vocab#referenceNumber",
+        "favoriteFood": "https://example.com/vocab#favoriteFood"
     }
-    ContextHandler._validate_context(input_dict)
+    validate_context(context)
 
 
 def test_validate_context_pass_context_w3c_base():
@@ -51,255 +125,83 @@ def test_validate_context_pass_context_w3c_base():
     # change true to True to correct for python
     # Sample from specification: https://w3c.github.io/vc-data-model/#base-context
     # Actual file contents from: https://www.w3.org/2018/credentials/v1
-    ContextHandler._validate_context(w3c_base)
+    validate_context(W3C_BASE_CONTEXT)
 
 
 def test_validate_context_pass_context_w3c_examples_v1():
     # test for https://www.w3.org/2018/credentials/examples/v1
-    ContextHandler._validate_context(w3c_example_v1)
+    validate_context(W3C_EXAMPLE_V1_CONTEXT)
 
 
-w3c_base = {
-    "@context": {
-        "@version": 1.1,
-        "@protected": True,
-        "id": "@id",
-        "type": "@type",
-        "VerifiableCredential": {
-            "@id": "https://www.w3.org/2018/credentials#VerifiableCredential",
-            "@context": {
-                "@version": 1.1,
-                "@protected": True,
-                "id": "@id",
-                "type": "@type",
-                "cred": "https://www.w3.org/2018/credentials#",
-                "sec": "https://w3id.org/security#",
-                "xsd": "http://www.w3.org/2001/XMLSchema#",
-                "credentialSchema": {
-                    "@id": "cred:credentialSchema",
-                    "@type": "@id",
-                    "@context": {
-                        "@version": 1.1,
-                        "@protected": True,
-                        "id": "@id",
-                        "type": "@type",
-                        "cred": "https://www.w3.org/2018/credentials#",
-                        "JsonSchemaValidator2018": "cred:JsonSchemaValidator2018"
-                    }
-                },
-                "credentialStatus": {"@id": "cred:credentialStatus", "@type": "@id"},
-                "credentialSubject": {"@id": "cred:credentialSubject", "@type": "@id"},
-                "evidence": {"@id": "cred:evidence", "@type": "@id"},
-                "expirationDate": {"@id": "cred:expirationDate", "@type": "xsd:dateTime"},
-                "holder": {"@id": "cred:holder", "@type": "@id"},
-                "issued": {"@id": "cred:issued", "@type": "xsd:dateTime"},
-                "issuer": {"@id": "cred:issuer", "@type": "@id"},
-                "issuanceDate": {"@id": "cred:issuanceDate", "@type": "xsd:dateTime"},
-                "proof": {"@id": "sec:proof", "@type": "@id", "@container": "@graph"},
-                "refreshService": {
-                    "@id": "cred:refreshService",
-                    "@type": "@id",
-                    "@context": {
-                        "@version": 1.1,
-                        "@protected": True,
-                        "id": "@id",
-                        "type": "@type",
-                        "cred": "https://www.w3.org/2018/credentials#",
-                        "ManualRefreshService2018": "cred:ManualRefreshService2018"
-                    }
-                },
-                "termsOfUse": {"@id": "cred:termsOfUse", "@type": "@id"},
-                "validFrom": {"@id": "cred:validFrom", "@type": "xsd:dateTime"},
-                "validUntil": {"@id": "cred:validUntil", "@type": "xsd:dateTime"}
-            }
+def test_static_validation_pass_valid_transaction():
+    operation = {
+        "meta": {
+            "type": "context",
+            "name": "TestContext",
+            "version": 1
         },
-        "VerifiablePresentation": {
-            "@id": "https://www.w3.org/2018/credentials#VerifiablePresentation",
-            "@context": {
-                "@version": 1.1,
-                "@protected": True,
-                "id": "@id",
-                "type": "@type",
-                "cred": "https://www.w3.org/2018/credentials#",
-                "sec": "https://w3id.org/security#",
-                "holder": {"@id": "cred:holder", "@type": "@id"},
-                "proof": {"@id": "sec:proof", "@type": "@id", "@container": "@graph"},
-                "verifiableCredential": {"@id": "cred:verifiableCredential", "@type": "@id", "@container": "@graph"}
-            }
-        },
-        "EcdsaSecp256k1Signature2019": {
-            "@id": "https://w3id.org/security#EcdsaSecp256k1Signature2019",
-            "@context": {
-                "@version": 1.1,
-                "@protected": True,
-                "id": "@id",
-                "type": "@type",
-                "sec": "https://w3id.org/security#",
-                "xsd": "http://www.w3.org/2001/XMLSchema#",
-                "challenge": "sec:challenge",
-                "created": {"@id": "http://purl.org/dc/terms/created", "@type": "xsd:dateTime"},
-                "domain": "sec:domain",
-                "expires": {"@id": "sec:expiration", "@type": "xsd:dateTime"},
-                "jws": "sec:jws",
-                "nonce": "sec:nonce",
-                "proofPurpose": {
-                    "@id": "sec:proofPurpose",
-                    "@type": "@vocab",
-                    "@context": {
-                        "@version": 1.1,
-                        "@protected": True,
-                        "id": "@id",
-                        "type": "@type",
-                        "sec": "https://w3id.org/security#",
-                        "assertionMethod": {"@id": "sec:assertionMethod", "@type": "@id", "@container": "@set"},
-                        "authentication": {"@id": "sec:authenticationMethod", "@type": "@id", "@container": "@set"}
-                    }
-                },
-                "proofValue": "sec:proofValue",
-                "verificationMethod": {"@id": "sec:verificationMethod", "@type": "@id"}
-            }
-        },
-        "EcdsaSecp256r1Signature2019": {
-            "@id": "https://w3id.org/security#EcdsaSecp256r1Signature2019",
-            "@context": {
-                "@version": 1.1,
-                "@protected": True,
-                "id": "@id",
-                "type": "@type",
-                "sec": "https://w3id.org/security#",
-                "xsd": "http://www.w3.org/2001/XMLSchema#",
-                "challenge": "sec:challenge",
-                "created": {"@id": "http://purl.org/dc/terms/created", "@type": "xsd:dateTime"},
-                "domain": "sec:domain",
-                "expires": {"@id": "sec:expiration", "@type": "xsd:dateTime"},
-                "jws": "sec:jws",
-                "nonce": "sec:nonce",
-                "proofPurpose": {
-                    "@id": "sec:proofPurpose",
-                    "@type": "@vocab",
-                    "@context": {
-                        "@version": 1.1,
-                        "@protected": True,
-                        "id": "@id",
-                        "type": "@type",
-                        "sec": "https://w3id.org/security#",
-                        "assertionMethod": {"@id": "sec:assertionMethod", "@type": "@id", "@container": "@set"},
-                        "authentication": {"@id": "sec:authenticationMethod", "@type": "@id", "@container": "@set"}
-                    }
-                },
-                "proofValue": "sec:proofValue",
-                "verificationMethod": {"@id": "sec:verificationMethod", "@type": "@id"}
-            }
-        },
-        "Ed25519Signature2018": {
-            "@id": "https://w3id.org/security#Ed25519Signature2018",
-            "@context": {
-                "@version": 1.1,
-                "@protected": True,
-                "id": "@id",
-                "type": "@type",
-                "sec": "https://w3id.org/security#",
-                "xsd": "http://www.w3.org/2001/XMLSchema#",
-                "challenge": "sec:challenge",
-                "created": {"@id": "http://purl.org/dc/terms/created", "@type": "xsd:dateTime"},
-                "domain": "sec:domain",
-                "expires": {"@id": "sec:expiration", "@type": "xsd:dateTime"},
-                "jws": "sec:jws",
-                "nonce": "sec:nonce",
-                "proofPurpose": {
-                    "@id": "sec:proofPurpose",
-                    "@type": "@vocab",
-                    "@context": {
-                        "@version": 1.1,
-                        "@protected": True,
-                        "id": "@id",
-                        "type": "@type",
-                        "sec": "https://w3id.org/security#",
-                        "assertionMethod": {"@id": "sec:assertionMethod", "@type": "@id", "@container": "@set"},
-                        "authentication": {"@id": "sec:authenticationMethod", "@type": "@id", "@container": "@set"}
-                    }
-                },
-                "proofValue": "sec:proofValue",
-                "verificationMethod": {"@id": "sec:verificationMethod", "@type": "@id"}
-            }
-        },
-        "RsaSignature2018": {
-            "@id": "https://w3id.org/security#RsaSignature2018",
-            "@context": {
-                "@version": 1.1,
-                "@protected": True,
-                "challenge": "sec:challenge",
-                "created": {"@id": "http://purl.org/dc/terms/created", "@type": "xsd:dateTime"},
-                "domain": "sec:domain",
-                "expires": {"@id": "sec:expiration", "@type": "xsd:dateTime"},
-                "jws": "sec:jws",
-                "nonce": "sec:nonce",
-                "proofPurpose": {
-                    "@id": "sec:proofPurpose",
-                    "@type": "@vocab",
-                    "@context": {
-                        "@version": 1.1,
-                        "@protected": True,
-                        "id": "@id",
-                        "type": "@type",
-                        "sec": "https://w3id.org/security#",
-                        "assertionMethod": {"@id": "sec:assertionMethod", "@type": "@id", "@container": "@set"},
-                        "authentication": {"@id": "sec:authenticationMethod", "@type": "@id", "@container": "@set"}
-                    }
-                },
-                "proofValue": "sec:proofValue",
-                "verificationMethod": {"@id": "sec:verificationMethod", "@type": "@id"}
-            }
-        },
-        "proof": {"@id": "https://w3id.org/security#proof", "@type": "@id", "@container": "@graph"}
+        DATA: W3C_BASE_CONTEXT,
+        "type": "200"
     }
-}
+    req = Request("test", 1, operation, "sig",)
+    ch = ContextHandler(None, None)
+    ch.static_validation(req)
 
-w3c_example_v1 = {
-    "@context": [
-        {
-            "@version": 1.1
+
+def test_static_validation_fail_invalid_type():
+    operation = {
+        "meta": {
+            "type": "context",
+            "name": "TestContext",
+            "version": 1
         },
-        "https://www.w3.org/ns/odrl.jsonld",
-        {
-            "ex": "https://example.org/examples#",
-            "schema": "http://schema.org/",
-            "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-            "3rdPartyCorrelation": "ex:3rdPartyCorrelation",
-            "AllVerifiers": "ex:AllVerifiers",
-            "Archival": "ex:Archival",
-            "BachelorDegree": "ex:BachelorDegree",
-            "Child": "ex:Child",
-            "CLCredentialDefinition2019": "ex:CLCredentialDefinition2019",
-            "CLSignature2019": "ex:CLSignature2019",
-            "IssuerPolicy": "ex:IssuerPolicy",
-            "HolderPolicy": "ex:HolderPolicy",
-            "Mother": "ex:Mother",
-            "RelationshipCredential": "ex:RelationshipCredential",
-            "UniversityDegreeCredential": "ex:UniversityDegreeCredential",
-            "ZkpExampleSchema2018": "ex:ZkpExampleSchema2018",
-            "issuerData": "ex:issuerData",
-            "attributes": "ex:attributes",
-            "signature": "ex:signature",
-            "signatureCorrectnessProof": "ex:signatureCorrectnessProof",
-            "primaryProof": "ex:primaryProof",
-            "nonRevocationProof": "ex:nonRevocationProof",
-            "alumniOf": {"@id": "schema:alumniOf", "@type": "rdf:HTML"},
-            "child": {"@id": "ex:child", "@type": "@id"},
-            "degree": "ex:degree",
-            "degreeType": "ex:degreeType",
-            "degreeSchool": "ex:degreeSchool",
-            "college": "ex:college",
-            "name": {"@id": "schema:name", "@type": "rdf:HTML"},
-            "givenName": "schema:givenName",
-            "familyName": "schema:familyName",
-            "parent": {"@id": "ex:parent", "@type": "@id"},
-            "referenceId": "ex:referenceId",
-            "documentPresence": "ex:documentPresence",
-            "evidenceDocument": "ex:evidenceDocument",
-            "spouse": "schema:spouse",
-            "subjectPresence": "ex:subjectPresence",
-            "verifier": {"@id": "ex:verifier", "@type": "@id"}
-        }
-    ]
-}
+        DATA: W3C_BASE_CONTEXT,
+        "type": "201"
+    }
+    req = Request("test", 1, operation, "sig",)
+    ch = ContextHandler(None, None)
+    with pytest.raises(LogicError):
+        ch.static_validation(req)
+
+
+def test_static_validation_fail_no_meta():
+    operation = {
+        DATA: W3C_BASE_CONTEXT,
+        "type": "200"
+    }
+    req = Request("test", 1, operation, "sig",)
+    ch = ContextHandler(None, None)
+    with pytest.raises(KeyError) as e:
+        ch.static_validation(req)
+    assert 'meta' in str(e.value)
+
+
+def test_static_validation_fail_no_data():
+    operation = {
+        "meta": {
+            "type": "context",
+            "name": "TestContext",
+            "version": 1
+        },
+        "type": "200"
+    }
+    req = Request("test", 1, operation, "sig",)
+    ch = ContextHandler(None, None)
+    with pytest.raises(KeyError) as e:
+        ch.static_validation(req)
+    assert DATA in str(e.value)
+
+
+def test_static_validation_fail_no_type():
+    operation = {
+        "meta": {
+            "type": "context",
+            "name": "TestContext",
+            "version": 1
+        },
+        DATA: W3C_BASE_CONTEXT
+    }
+    req = Request("test", 1, operation, "sig",)
+    ch = ContextHandler(None, None)
+    with pytest.raises(LogicError):
+        ch.static_validation(req)

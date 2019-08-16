@@ -10,7 +10,6 @@ Environment = NamedTuple("Environment", [
     ("domainLedger", str)
 ])
 
-# --------------Rich Schema----------------
 RS_META = 'meta'
 RS_META_NAME = 'name'
 RS_META_TYPE = 'type'
@@ -24,10 +23,12 @@ RS_SCHEMA_TYPE = "@type"
 RS_SCHEMA_DOCUMENT = "properties"
 RS_SCHEMA_FROM = "author"
 # CONTEXT
+RS_TYPE = "type"
 CONTEXT_NAME = "name"
 CONTEXT_VERSION = "version"
-CONTEXT_CONTEXT_ARRAY = "context_array"
-CONTEXT_FROM = "author"
+CONTEXT_CONTEXT = "@context"
+CONTEXT_ID = "id"
+CONTEXT_TYPE = 'ctx'
 # MAPPING
 RS_MAPPING_LABEL = "label"
 RS_MAPPING_TYPE = "@type"
@@ -53,7 +54,6 @@ RS_PRES_DEF_LABEL = "label"
 RS_PRES_DEF_TYPE = "@type"
 RS_PRES_DEF_DOCUMENT = "@properties"
 RS_PRES_DEF_CONTEXT = "@context"
-# ------------------------------------------
 
 # SCHEMA
 SCHEMA_NAME = "name"

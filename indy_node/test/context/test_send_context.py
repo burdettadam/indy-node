@@ -4,60 +4,30 @@ import pytest
 
 from indy_common.authorize.auth_constraints import AuthConstraintForbidden
 #from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT
-from indy_common.constants import CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT_ARRAY
-from indy_common.types import SetContextField
+from indy_common.constants import CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT
+from indy_node.test.context.helper import W3C_BASE_CONTEXT
+from indy_common.types import ContextDataField
 from indy_node.test.api.helper import validate_write_reply, sdk_write_context_and_check
 from plenum.common.exceptions import RequestRejectedException
 from plenum.common.util import randomString
 from plenum.config import NAME_FIELD_LIMIT
 
 
-def test_send_context_multiple_links_with_object(looper, sdk_pool_handle,
+def test_send_context_pass(looper, sdk_pool_handle,
                                      sdk_wallet_endorser):
-    test_context_object = {
-        "@context": {
-            "name": "did:sov:11111111111111111111111;content-id=ctx:UVj5w8DRzcmPVDpUMr4AZhJ",
-            "address": "did:sov:11111111111111111111111;content-id=ctx:UVj5w8DRzcmPVDpUMr4AZhJ"
-        }
-    }
-    sdk_write_context_and_check(
+    rep = sdk_write_context_and_check(
         looper, sdk_pool_handle,
         sdk_wallet_endorser,
-        test_context_object,
-        "ISO18013_DriverLicenseContextr",
-        "1.9"
+        {"@context": "https://www.example.com"},
+        "Base_Context",
+        "1.0",
+        "24mZ2FhDjWdVgs8pJSkaMY1"
     )
+    data = rep[0][0]['operation']['data']
+    assert data[CONTEXT_VERSION] == '1.0'
+    assert data[CONTEXT_NAME] == 'Base_Context'
+    assert data[CONTEXT_CONTEXT] == W3C_BASE_CONTEXT
 
-def test_send_context_multiple_links(looper, sdk_pool_handle,
-                                     sdk_wallet_trustee):
-    sdk_write_context_and_check(
-        looper, sdk_pool_handle,
-        sdk_wallet_trustee,
-        {
-            '@context':[
-                "did:sov:11111111111111111111111;content-id=ctx:UVj5w8DRzcmPVDpUMr4AZhJ",
-                "did:sov:11111111111111111111111;content-id=ctx:AZKWUJ3zArXPG36kyTJZZm",
-                "did:sov:11111111111111111111111;content-id=ctx:9TDvb9PPgKQUWNQcWAFMo4"
-            ]
-        },
-        "ISO18013_DriverLicenseContext",
-        "1.9"
-    )
-
-
-def test_send_context_one_link(looper, sdk_pool_handle,
-                                sdk_wallet_trustee):
-    sdk_write_context_and_check(
-        looper, sdk_pool_handle,
-        sdk_wallet_trustee,
-        {
-            '@context':[
-                "did:sov:11111111111111111111111;content-id=ctx:9TDvb9PPgKQUWNQcWAFMo4"
-            ]
-        },
-        "ISO18013_DriverLicenseContext2",
-        "1.9"
-    )
 
 '''
 def test_can_not_send_same_schema(looper, sdk_pool_handle,
