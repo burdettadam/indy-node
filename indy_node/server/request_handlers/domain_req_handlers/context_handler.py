@@ -20,8 +20,8 @@ from re import findall
 # defined in https://tools.ietf.org/html/rfc3986#page-50
 URI_REGEX = '^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?'
 
-class ContextHandler(WriteRequestHandler):
 
+class ContextHandler(WriteRequestHandler):
 
     @staticmethod
     def _bad_uri(uri_string):
@@ -37,7 +37,7 @@ class ContextHandler(WriteRequestHandler):
                 raise Exception("Context missing '@context' property")
             if isinstance(context_array["@context"], list):
                 for ctx in context_array["@context"]:
-                    if not isinstance(ctx,dict):
+                    if not isinstance(ctx, dict):
                         if ContextHandler._bad_uri(ctx):
                             raise Exception('@context URI badly formed')
             else:
@@ -60,7 +60,6 @@ class ContextHandler(WriteRequestHandler):
         if not request.operation['data']['version']:
             raise Exception("Context transaction has no 'version' property")
         ContextHandler._validate_context(request.operation['data']['context_array'])
-
 
     def dynamic_validation(self, request: Request):
         # we can not add a Context with already existent NAME and VERSION

@@ -3,26 +3,27 @@ from binascii import hexlify
 from common.serializers.serialization import domain_state_serializer
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
-from indy_common.constants import NYM
+from indy_common.constants import NYM, SET_RS_DID_DOC
 from indy_common.auth import Authoriser
 from ledger.util import F
 
-from plenum.common.constants import ROLE, TARGET_NYM, VERKEY, TXN_TIME
+from plenum.common.constants import ROLE, TARGET_NYM, VERKEY, TXN_TIME, DOMAIN_LEDGER_ID
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
 from plenum.common.txn_util import get_payload_data, get_seq_no, get_txn_time, get_request_data, get_from
 from plenum.common.types import f
 from plenum.server.database_manager import DatabaseManager
+from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
 from plenum.server.request_handlers.nym_handler import NymHandler as PNymHandler
 from plenum.server.request_handlers.utils import nym_to_state_key, get_nym_details
 
 
-class RsDidDocHandler(PNymHandler):
+class RsDidDocHandler(WriteRequestHandler):
     state_serializer = domain_state_serializer
 
-    def __init__(self, config, database_manager: DatabaseManager,
+    def __init__(self, database_manager: DatabaseManager,
                  write_req_validator: WriteRequestValidator):
-        super().__init__(config, database_manager)
+        super().__init__(database_manager, SET_RS_DID_DOC, DOMAIN_LEDGER_ID)
         self.write_req_validator = write_req_validator
 
     def static_validation(self, request: Request):

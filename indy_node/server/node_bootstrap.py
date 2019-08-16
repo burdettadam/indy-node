@@ -142,7 +142,7 @@ class NodeBootstrap(PNodeBootstrap):
         # Rich Schema
         context_handler = ContextHandler(database_manager=self.node.db_manager,
                                          write_req_validator=self.node.write_req_validator)
-        '''_rs_did_doc_handler = RsDidDocHandler(database_manager=self.node.db_manager,
+        _rs_did_doc_handler = RsDidDocHandler(database_manager=self.node.db_manager,
                                               write_req_validator=self.node.write_req_validator)
         _rs_encoding_handler = RsEncodingHandler(database_manager=self.node.db_manager,
                                                  write_req_validator=self.node.write_req_validator)
@@ -151,7 +151,7 @@ class NodeBootstrap(PNodeBootstrap):
         _rs_cred_def_handler = RsCredDefHandler(database_manager=self.node.db_manager,
                                                 write_req_validator=self.node.write_req_validator)
         _rs_pres_def_handler = RsPresDefHandler(database_manager=self.node.db_manager,
-                                                write_req_validator=self.node.write_req_validator)'''
+                                                write_req_validator=self.node.write_req_validator)
         _rs_schema_handler = RsSchemaHandler(database_manager=self.node.db_manager,
                                              write_req_validator=self.node.write_req_validator)
 

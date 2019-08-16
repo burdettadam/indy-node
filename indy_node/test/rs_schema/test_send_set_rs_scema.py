@@ -1,10 +1,11 @@
+import asyncio
 import json
 
 from indy.ledger import sign_request, submit_request
 
 from indy_common.constants import SET_RS_SCHEMA, RS_META, RS_META_NAME, RS_META_VERSION, RS_DATA
 from plenum.test.conftest import sdk_wallet_trustee
-from plenum.test.helper import sdk_check_reply
+from plenum.test.helper import sdk_check_reply, sdk_sign_and_submit_req, sdk_get_and_check_replies
 
 
 def test_send_schema(looper, sdk_pool_handle, sdk_wallet_endorser):
@@ -18,7 +19,7 @@ def test_send_schema(looper, sdk_pool_handle, sdk_wallet_endorser):
                 RS_META_VERSION: "1.1"
             },
             RS_DATA: {
-                "@context": "did:sov:2f9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                "@context": "ctx:sov:2f9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
                 "@type": "rdfs:Class",
                 "rdfs:comment": "ISO18013 International Driver License",
                 "rdfs:label": "Driver License",
@@ -43,12 +44,17 @@ def test_send_schema(looper, sdk_pool_handle, sdk_wallet_endorser):
                         "@type": "sch:PropertyValueSpecification",
                         "valuePattern": "^([A-Z]|[1-9])$"
                     }
-                }
-            },
-            "identifier": authors_did,
-            "reqId": 13345678,
-            "protocolVersion": 2
-        }
+                },
+                "administrativeNumber": "Text"
+            }
+
+        },
+        "identifier": authors_did,
+        "reqId": 1565971763281198952,
+        "protocolVersion": 2
     })
-    sign_txn_json = sign_request(sdk_wallet_trustee, authors_did, txn_json)
-    sdk_check_reply(submit_request(sdk_pool_handle, sign_txn_json))
+    req = sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_endorser, txn_json)
+    rep = sdk_get_and_check_replies(looper, [req])
+
+    # sign_txn_json = asyncio.ensure_future(sign_request(sdk_wallet_trustee, authors_did, txn_json))
+    # sdk_check_reply(asyncio.ensure_future(submit_request(sdk_pool_handle, sign_txn_json)))

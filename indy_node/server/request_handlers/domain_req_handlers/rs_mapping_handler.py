@@ -16,6 +16,9 @@ from plenum.server.request_handlers.utils import encode_state_value
 
 class RsMappingHandler(WriteRequestHandler):
 
+    def dynamic_validation(self, request: Request):
+        pass
+
     def __init__(self, database_manager: DatabaseManager,
                  write_req_validator: WriteRequestValidator):
         super().__init__(database_manager, SET_RS_MAPPING, DOMAIN_LEDGER_ID)

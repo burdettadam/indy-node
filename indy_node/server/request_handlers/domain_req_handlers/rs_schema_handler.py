@@ -1,7 +1,7 @@
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 
-from indy_common.constants import RS_SCHEMA_CONTEXT, RS_SCHEMA_DOCUMENT, SET_RS_SCHEMA, \
+from indy_common.constants import SET_RS_SCHEMA, \
     RS_META, RS_META_TYPE, RS_META_VERSION, RS_DATA, RS_META_NAME, RS_JSON_LD_ID
 
 from indy_common.state.state_constants import MARKER_RS_SCHEMA
@@ -18,6 +18,9 @@ from plenum.server.request_handlers.utils import encode_state_value
 
 
 class RsSchemaHandler(WriteRequestHandler):
+
+    def dynamic_validation(self, request: Request):
+        pass
 
     def __init__(self, database_manager: DatabaseManager,
                  write_req_validator: WriteRequestValidator):
