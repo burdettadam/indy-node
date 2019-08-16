@@ -1,5 +1,5 @@
 from indy_common.constants import CONTEXT_NAME, CONTEXT_VERSION, GET_CONTEXT
-from indy_common.req_utils import get_read_context_from, get_read_context_name, get_read_context_version
+from indy_common.req_utils import get_read_context_name, get_read_context_version
 from indy_node.server.request_handlers.domain_req_handlers.context_handler import ContextHandler
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.request import Request
@@ -14,7 +14,7 @@ class GetRsPresDefHandler(ReadRequestHandler):
 
     def get_result(self, request: Request):
         self._validate_request_type(request)
-        author_did = get_read_context_from(request)
+        author_did = 'get_read_context_from(request)'
         context_name = get_read_context_name(request)
         context_version = get_read_context_version(request)
         context, last_seq_no, last_update_time, proof = self.get_context(
