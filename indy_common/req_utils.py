@@ -14,19 +14,19 @@ from plenum.common.txn_util import get_payload_data
 # CONTEXT
 
 def get_write_context_name(req):
-    return req.operation[DATA][CONTEXT_NAME]
+    return req.operation[META][CONTEXT_NAME]
 
 
 def get_txn_context_name(txn):
-    return get_payload_data(txn)[DATA][CONTEXT_NAME]
+    return get_payload_data(txn)[META][CONTEXT_NAME]
 
 
 def get_write_context_version(req: Request):
-    return req.operation[DATA][CONTEXT_VERSION]
+    return req.operation[META][CONTEXT_VERSION]
 
 
 def get_txn_context_version(txn):
-    return get_payload_data(txn)[DATA][CONTEXT_VERSION]
+    return get_payload_data(txn)[META][CONTEXT_VERSION]
 
 
 def get_write_context_data(req: Request):
@@ -41,12 +41,16 @@ def get_txn_context_data(txn):
     return get_payload_data(txn)[DATA]
 
 
+def get_txn_context_meta(txn):
+    return get_payload_data(txn)[META]
+
+
 def get_read_context_name(req: Request):
-    return req.operation[DATA][CONTEXT_NAME]
+    return req.operation[META][CONTEXT_NAME]
 
 
 def get_read_context_version(req: Request):
-    return req.operation[DATA][CONTEXT_VERSION]
+    return req.operation[META][CONTEXT_VERSION]
 
 
 def get_read_context_id(req: Request):

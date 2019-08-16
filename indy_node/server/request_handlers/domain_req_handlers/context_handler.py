@@ -17,7 +17,7 @@ from plenum.server.request_handlers.utils import encode_state_value
 
 from re import findall
 
-# defined in https://tools.ietf.org/html/rfc3986#page-50
+URI_REGEX = r'^(?P<scheme>\w+):(?:(?:(?P<url>//[.\w]+)(?:(/(?P<path>[/\w]+)?)?))|(?:(?P<method>\w+):(?P<id>\w+)))'
 
 # URI_REGEX = '^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?'
 URI_REGEX = r'^(?P<scheme>\w+):(?:(?:(?P<url>//[.\w]+)(?:(/(?P<path>[/\w]+)?)?))|(?:(?P<method>\w+):(?P<id>\w+)))'
@@ -31,9 +31,9 @@ class ContextHandler(WriteRequestHandler):
 
     def static_validation(self, request: Request):
         self._validate_request_type(request)
-        meta = request.operation[META]
-        validate_metadata(meta)
-        data = request.operation[DATA]
+        meta = request.operation['meta']
+        validate_meta(meta)
+        data = request.operation['data']
         validate_data(data)
 
     def dynamic_validation(self, request: Request):
@@ -73,7 +73,7 @@ def prepare_context_for_state(txn, path_only=False):
     meta = get_txn_context_meta(txn)
     identifier = meta['id']
     value = {
-        META: meta,
+        META: get_txn_context_meta(txn),
         DATA: get_txn_context_data(txn)
     }
     seq_no = get_seq_no(txn)
@@ -107,13 +107,15 @@ def validate_data(data):
         raise Exception('data is not an object')
 
 
-def validate_metadata(meta):
+def validate_meta(meta):
     if not meta['name']:
         raise Exception("Context transaction has no 'name' property")
     if not meta['version']:
         raise Exception("Context transaction has no 'version' property")
     if not meta['type']:
         raise Exception("Context transaction has no 'type' property")
+    if not meta['type'] == 'ctx':
+        raise Exception("Context transaction meta 'type' is '{}', should be 'ctx'".format(meta['type']))
 
 
 def validate_context(context):
@@ -121,11 +123,11 @@ def validate_context(context):
         for ctx in context:
             if not isinstance(ctx, dict):
                 if _bad_uri(ctx):
-                    raise Exception('@context URI {} badly formed', ctx)
+                    raise Exception('@context URI {} badly formed'.format(ctx))
     elif isinstance(context, dict):
         pass
     elif isinstance(context, str):
         if _bad_uri(context):
-            raise Exception('@context URI {} badly formed', context)
+            raise Exception('@context URI {} badly formed'.format(context))
     else:
         raise Exception("'@context' value must be url, array, or object")

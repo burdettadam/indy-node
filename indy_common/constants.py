@@ -26,9 +26,10 @@ RS_SCHEMA_FROM = "author"
 RS_TYPE = "type"
 CONTEXT_NAME = "name"
 CONTEXT_VERSION = "version"
-CONTEXT_CONTEXT = "@context"
 CONTEXT_ID = "id"
 CONTEXT_TYPE = 'ctx'
+CONTEXT_CONTEXT = "context"
+CONTEXT_FROM = "dest"
 # MAPPING
 RS_MAPPING_LABEL = "label"
 RS_MAPPING_TYPE = "@type"

@@ -1,47 +1,69 @@
 
 import pytest
-from plenum.common.constants import DATA
 
 from common.exceptions import LogicError
+from indy_common.constants import CONTEXT_TYPE
 
-from indy_node.server.request_handlers.domain_req_handlers.context_handler import validate_metadata, validate_data, \
-    ContextHandler, validate_context
+from indy_node.server.request_handlers.domain_req_handlers.context_handler import validate_data, validate_context, \
+    ContextHandler, validate_meta
+from plenum.common.constants import DATA
 from plenum.common.request import Request
 from indy_node.test.context.helper import W3C_BASE_CONTEXT, W3C_EXAMPLE_V1_CONTEXT
 
 
-def test_validate_metadata_fail_on_empty():
+
+def test_validate_meta_fail_on_empty():
     with pytest.raises(KeyError) as e:
-        validate_metadata({})
+        validate_meta({})
     assert "name" in str(e.value)
 
 
-def test_validate_metadata_fail_no_name():
+def test_validate_meta_fail_no_name():
     meta = {
         "version": "2.5"
     }
     with pytest.raises(KeyError) as e:
-        validate_metadata(meta)
+        validate_meta(meta)
     assert "name" in str(e.value)
 
 
-def test_validate_metadata_fail_no_version():
+def test_validate_meta_fail_no_version():
     meta = {
         "name": "New Context"
     }
     with pytest.raises(KeyError) as e:
-        validate_metadata(meta)
+        validate_meta(meta)
     assert "version" in str(e.value)
 
 
-def test_validate_metadata_fail_no_type():
+def test_validate_meta_fail_no_type():
     meta = {
         "name": "New Context",
         "version": "5.2"
     }
     with pytest.raises(KeyError) as e:
-        validate_metadata(meta)
+        validate_meta(meta)
     assert "type" in str(e.value)
+
+
+def test_validate_meta_fail_wrong_type():
+    meta = {
+        "name": "New Context",
+        "version": "5.2",
+        "type": "sch"
+    }
+    with pytest.raises(Exception) as e:
+        validate_meta(meta)
+    assert "Context transaction meta 'type' is 'sch', should be 'ctx'" in str(e.value)
+
+
+def test_validate_meta_pass():
+    meta = {
+        "name": "New Context",
+        "version": "5.2",
+        "type": "ctx"
+    }
+    validate_meta(meta)
 
 
 def test_validate_data_fail_on_empty():
@@ -112,12 +134,17 @@ def test_validate_context_fail_value_is_list_with_dict_and_bad_uri():
     assert "this is a bad uri" in str(e.value)
 
 
-def test_validate_context_pass_context_w3c_example_15():
-    context = {
-        "referenceNumber": "https://example.com/vocab#referenceNumber",
-        "favoriteFood": "https://example.com/vocab#favoriteFood"
-    }
-    validate_context(context)
+
+def test_validate_context_fail_value_is_list_with_dict_and_bad_uri():
+    context = [
+        {
+            "favoriteColor": "https://example.com/vocab#favoriteColor"
+        },
+        "this is a bad uri"
+    ]
+    with pytest.raises(Exception) as e:
+        validate_context(context)
+    assert "this is a bad uri" in str(e.value)
 
 
 def test_validate_context_pass_context_w3c_base():
@@ -136,11 +163,12 @@ def test_validate_context_pass_context_w3c_examples_v1():
 def test_static_validation_pass_valid_transaction():
     operation = {
         "meta": {
-            "type": "context",
+
             "name": "TestContext",
-            "version": 1
+            "version": 1,
+            "type": "ctx"
         },
-        DATA: W3C_BASE_CONTEXT,
+        "data": W3C_BASE_CONTEXT,
         "type": "200"
     }
     req = Request("test", 1, operation, "sig",)
@@ -164,12 +192,29 @@ def test_static_validation_fail_invalid_type():
         ch.static_validation(req)
 
 
-def test_static_validation_fail_no_meta():
+
+def test_static_validation_fail_invalid_type():
     operation = {
-        DATA: W3C_BASE_CONTEXT,
-        "type": "200"
+        "meta": {
+            "type": "context",
+            "name": "TestContext",
+            "version": 1
+        },
+        "data": W3C_BASE_CONTEXT,
+        "type": "201"
     }
     req = Request("test", 1, operation, "sig",)
+    ch = ContextHandler(None, None)
+    with pytest.raises(LogicError):
+        ch.static_validation(req)
+
+
+def test_static_validation_fail_no_meta():
+    operation = {
+        "data": W3C_BASE_CONTEXT,
+        "type": "200"
+    }
+    req = Request("test", 1, operation, "sig", )
     ch = ContextHandler(None, None)
     with pytest.raises(KeyError) as e:
         ch.static_validation(req)
@@ -179,17 +224,19 @@ def test_static_validation_fail_no_meta():
 def test_static_validation_fail_no_data():
     operation = {
         "meta": {
-            "type": "context",
+
+            "type": CONTEXT_TYPE,
             "name": "TestContext",
             "version": 1
         },
         "type": "200"
     }
-    req = Request("test", 1, operation, "sig",)
+
+    req = Request("test", 1, operation, "sig", )
     ch = ContextHandler(None, None)
     with pytest.raises(KeyError) as e:
         ch.static_validation(req)
-    assert DATA in str(e.value)
+    assert "data" in str(e.value)
 
 
 def test_static_validation_fail_no_type():
@@ -199,7 +246,8 @@ def test_static_validation_fail_no_type():
             "name": "TestContext",
             "version": 1
         },
-        DATA: W3C_BASE_CONTEXT
+
+        "data": W3C_BASE_CONTEXT
     }
     req = Request("test", 1, operation, "sig",)
     ch = ContextHandler(None, None)
