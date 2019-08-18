@@ -207,10 +207,10 @@ GET_REVOC_REG_DELTA = IndyTransactions.GET_REVOC_REG_DELTA.value
 CHANGE_KEY = IndyTransactions.CHANGE_KEY.value
 
 # Rich Schema
-SET_RS_SCHEMA = IndyTransactions.SET_RS_SCHEMA.value
-GET_RS_SCHEMA = IndyTransactions.GET_RS_SCHEMA.value
 SET_CONTEXT = IndyTransactions.SET_CONTEXT.value
 GET_CONTEXT = IndyTransactions.GET_CONTEXT.value
+SET_RS_SCHEMA = IndyTransactions.SET_RS_SCHEMA.value
+GET_RS_SCHEMA = IndyTransactions.GET_RS_SCHEMA.value
 SET_RS_MAPPING = IndyTransactions.SET_RS_MAPPING.value
 GET_RS_MAPPING = IndyTransactions.GET_RS_MAPPING.value
 SET_RS_ENCODING = IndyTransactions.SET_RS_ENCODING.value
@@ -219,8 +219,8 @@ SET_RS_DID_DOC = IndyTransactions.SET_RS_DID_DOC.value
 GET_RS_DID_DOC = IndyTransactions.GET_RS_DID_DOC.value
 SET_RS_PRES_DEF = IndyTransactions.SET_RS_PRES_DEF.value
 GET_RS_PRES_DEF = IndyTransactions.GET_RS_PRES_DEF.value
-SET_RS_CRED_DEF = IndyTransactions.SET_RS_PRES_DEF.value
-GET_RS_CRED_DEF = IndyTransactions.GET_RS_PRES_DEF.value
+SET_RS_CRED_DEF = IndyTransactions.SET_RS_CRED_DEF.value
+GET_RS_CRED_DEF = IndyTransactions.GET_RS_CRED_DEF.value
 
 POOL_UPGRADE = IndyTransactions.POOL_UPGRADE.value
 NODE_UPGRADE = IndyTransactions.NODE_UPGRADE.value

@@ -12,7 +12,6 @@ from indy_common.req_utils import get_txn_schema_name, get_txn_claim_def_schema_
     get_write_context_name, get_write_context_version, get_txn_context_name, \
     get_txn_context_version, get_txn_context_data
 from indy_common.serialization import attrib_raw_data_serializer
-from indy_common.state.state_constants import MARKER_CONTEXT
 from plenum.common.constants import RAW, ENC, HASH, TXN_TIME, \
     TARGET_NYM, DATA, TYPE
 from plenum.common.txn_util import get_type, get_payload_data, get_seq_no, get_txn_time, get_from
@@ -51,7 +50,6 @@ def make_state_path_for_schema(authors_did, schema_name, schema_version) -> byte
                 MARKER=MARKER_SCHEMA,
                 SCHEMA_NAME=schema_name,
                 SCHEMA_VERSION=schema_version).encode()
-
 
 # Rich Schema
 def make_state_path_for_context(authors_did, context_name, context_version) -> bytes:

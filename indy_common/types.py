@@ -35,7 +35,7 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     REVOC_REG_ENTRY, ISSUED, REVOC_REG_DEF_ID, REVOKED, ACCUM, PREV_ACCUM, \
     GET_REVOC_REG_DEF, GET_REVOC_REG, TIMESTAMP, \
     GET_REVOC_REG_DELTA, FROM, TO, POOL_RESTART, DATETIME, VALIDATOR_INFO, \
-    SET_CONTEXT, GET_CONTEXT, CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT, CONTEXT_ID, \
+    SET_CONTEXT, GET_CONTEXT, CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT, CONTEXT_ID, CONTEXT_FROM, \
     SCHEMA_FROM, SCHEMA_NAME, SCHEMA_VERSION, \
     SCHEMA_ATTR_NAMES, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, CLAIM_DEF_SCHEMA_REF, \
     CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE, AUTH_RULE, AUTH_RULES, CONSTRAINT, AUTH_ACTION, \
@@ -100,7 +100,7 @@ class SchemaField(MessageValidator):
 # FIXME This will break if dictionary entries are passed
 # FIXME Replace LimitedLengthStringField with something that can validate a context.
 class SetContextField(MessageValidator):
-    schema = (
+    context = (
         (CONTEXT_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
         (CONTEXT_VERSION, VersionField(version_cls=ContextVersion)),
         (CONTEXT_CONTEXT, IterableField(
@@ -112,7 +112,7 @@ class SetContextField(MessageValidator):
 
 
 class ContextMetaField(MessageValidator):
-    schema = (
+    context = (
         (CONTEXT_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
         (CONTEXT_VERSION, VersionField(version_cls=ContextVersion)),
         (RS_TYPE, ConstantField(CONTEXT_TYPE)),
@@ -198,15 +198,15 @@ class ClientSetContextOperation(MessageValidator):
     context = (
         (TXN_TYPE, ConstantField(SET_CONTEXT)),
         (META, ContextMetaField()),
-        (DATA, ContextDataField()),
+        (DATA, GetContextField()),
     )
 
 
 class ClientGetContextOperation(MessageValidator):
-    schema = (
+    context = (
         (TXN_TYPE, ConstantField(GET_CONTEXT)),
         (CONTEXT_ID, IdentifierField()),
-        (DATA, GetContextField()),
+        (DATA, IdentifierField()),
     )
 
 

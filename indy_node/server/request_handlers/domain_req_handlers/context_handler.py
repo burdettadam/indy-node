@@ -19,8 +19,6 @@ from re import findall
 
 URI_REGEX = r'^(?P<scheme>\w+):(?:(?:(?P<url>//[.\w]+)(?:(/(?P<path>[/\w]+)?)?))|(?:(?P<method>\w+):(?P<id>\w+)))'
 
-# URI_REGEX = '^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?'
-URI_REGEX = r'^(?P<scheme>\w+):(?:(?:(?P<url>//[.\w]+)(?:(/(?P<path>[/\w]+)?)?))|(?:(?P<method>\w+):(?P<id>\w+)))'
 
 class ContextHandler(WriteRequestHandler):
 
@@ -40,8 +38,11 @@ class ContextHandler(WriteRequestHandler):
         # we can not add a Context with already existent NAME and VERSION
         # since a Context needs to be identified by seqNo
         self._validate_request_type(request)
-        identifier = get_context_identifier(request)
-        context, _, _ = self.get_from_state(identifier)
+        identifier, req_id, operation = get_request_data(request)
+        context_name = get_write_context_name(request)
+        context_version = get_write_context_version(request)
+        path = make_state_path_for_context(identifier, context_name, context_version)
+        context, _, _ = self.get_from_state(path)
         if context:
             self.write_req_validator.validate(request,
                                               [AuthActionEdit(txn_type=SET_CONTEXT,
@@ -65,21 +66,21 @@ class ContextHandler(WriteRequestHandler):
         self.state.set(path, value_bytes)
 
 
-def get_context_identifier(request: Request):
-    return request.operation[META]['id']
-
-
 def prepare_context_for_state(txn, path_only=False):
-    meta = get_txn_context_meta(txn)
-    identifier = meta['id']
+    origin = get_from(txn)
+    context_name = get_txn_context_name(txn)
+    context_version = get_txn_context_version(txn)
     value = {
         META: get_txn_context_meta(txn),
         DATA: get_txn_context_data(txn)
     }
+    path = make_state_path_for_context(origin, context_name, context_version)
+    if path_only:
+        return path
     seq_no = get_seq_no(txn)
     txn_time = get_txn_time(txn)
     value_bytes = encode_state_value(value, seq_no, txn_time)
-    return identifier, value_bytes
+    return path, value_bytes
 
 
 def make_state_path_for_context(authors_did, context_name, context_version) -> bytes:

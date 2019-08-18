@@ -2,9 +2,7 @@ import json
 import base58
 
 from indy.anoncreds import issuer_create_schema
-
 from indy.ledger import build_schema_request
-
 
 from indy_common.constants import SET_CONTEXT, CONTEXT_TYPE
 from plenum.test.helper import sdk_get_reply, sdk_sign_and_submit_req, sdk_get_and_check_replies
@@ -221,8 +219,7 @@ def sdk_write_schema_and_check(looper, sdk_pool_handle, sdk_wallet_client,
     rep = sdk_get_and_check_replies(looper, [req])
     return rep
 
-
-def sdk_write_context(looper, sdk_pool_handle, sdk_wallet_steward, context=[], name="", version="", txn_type=""):
+def sdk_write_context(looper, sdk_pool_handle, sdk_wallet_steward, context=[], name="", version=""):
     _wh, did = sdk_wallet_steward
 
     '''_, context_json = looper.loop.run_until_complete(
@@ -254,7 +251,7 @@ def sdk_write_context(looper, sdk_pool_handle, sdk_wallet_steward, context=[], n
 
 
 def sdk_write_context_and_check(looper, sdk_pool_handle, sdk_wallet_steward,
-                                context=[], name="", version="", ctx_id=""):
+                                context=[], name="", version=""):
     _wh, did = sdk_wallet_steward
 
     '''_, context_json = looper.loop.run_until_complete(
@@ -281,6 +278,7 @@ def sdk_write_context_and_check(looper, sdk_pool_handle, sdk_wallet_steward,
     }
 
     set_context_txn_json = json.dumps(raw_json)
+
 
     '''request = looper.loop.run_until_complete(
         build_schema_request(did, schema_json)
