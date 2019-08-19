@@ -25,29 +25,11 @@ class RsMappingHandler(WriteRequestHandler):
         self.write_req_validator = write_req_validator
 
     def _validate(self, meta, mapping):
+        # TODO: validate operation data
         pass
 
     def static_validation(self, request: Request):
         self._validate_request_type(request)  # is this redundant check, how is this code called if txn type is wrong?
-        if request.operation[RS_META] is None:
-            pass
-        if not isinstance(request.operation[RS_META], dict):
-            pass
-        if request.operation[RS_META][RS_META_TYPE] is None:
-            pass
-        if not isinstance(request.operation[RS_META][RS_META_TYPE], str):
-            pass
-        if request.operation[RS_META][RS_META_NAME] is None:
-            pass
-        if not isinstance(request.operation[RS_META][RS_META_NAME], str):
-            pass
-        if request.operation[RS_META][RS_META_VERSION] is None:
-            pass
-        if not isinstance(request.operation[RS_META][RS_META_VERSION], str):
-            pass
-        if request.operation[RS_DATA] is None:
-            pass
-        # TODO: validate operation data
         self._validate(request.operation[RS_META], request.operation[RS_DATA])
 
         author = request.identifier
@@ -57,7 +39,11 @@ class RsMappingHandler(WriteRequestHandler):
 
         mapping, _, _ = self.get_from_state(_id)
         if mapping:
-            return False  # updating belongs in a different txn.
+            self.write_req_validator.validate(request,
+                                              [AuthActionEdit(txn_type=SET_RS_MAPPING,
+                                                              field='*',
+                                                              old_value='*',
+                                                              new_value='*')])
         else:
             self.write_req_validator.validate(request,
                                               [AuthActionAdd(txn_type=SET_RS_MAPPING,
@@ -82,8 +68,6 @@ class RsMappingHandler(WriteRequestHandler):
         _id = RsMappingHandler.make_state_path(did_author, meta[RS_META_NAME], meta[RS_META_VERSION])
         if path_only:
             return _id
-        data.update({RS_JSON_LD_ID: _id})
-        meta.update({RS_META_TYPE: MARKER_RS_MAPPING})
         value = {
             RS_META: meta,
             RS_DATA: data

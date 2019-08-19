@@ -40,8 +40,12 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     SCHEMA_ATTR_NAMES, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, CLAIM_DEF_SCHEMA_REF, \
     CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE, AUTH_RULE, AUTH_RULES, CONSTRAINT, AUTH_ACTION, \
     AUTH_TYPE, \
-    FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, RULES, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND
-from indy_common.version import SchemaVersion, ContextVersion
+    FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, RULES, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, RS_META_NAME, \
+    RS_META_VERSION, GET_RS_SCHEMA, SET_RS_SCHEMA, RS_JSON_LD_ID, RS_JSON_LD_TYPE, RS_JSON_LD_CONTEXT, RS_META, \
+    RS_META_ID, RS_META_TYPE, SET_RS_ENCODING, SET_RS_MAPPING, SET_RS_DID_DOC, SET_RS_CRED_DEF, RS_CRED_DEF_SCHEMA_REF, \
+    RS_CRED_DEF_MAPPING_REF, RS_CRED_DEF_SIGNATURE_TYPE, RS_CRED_DEF_TAG, RS_CRED_DEF_PUBLIC_KEYS, SET_RS_PRES_DEF, \
+    GET_RS_ENCODING, GET_RS_MAPPING, GET_RS_DID_DOC, GET_RS_CRED_DEF, GET_RS_PRES_DEF
+from indy_common.version import SchemaVersion, ContextVersion, RsMetaVersion
 
 
 class Request(PRequest):
@@ -109,11 +113,27 @@ class SetContextField(MessageValidator):
             max_length=CONTEXT_ATTRIBUTES_LIMIT)),
     )
 
+
 class GetContextField(MessageValidator):
     schema = (
         (CONTEXT_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
         (CONTEXT_VERSION, VersionField(version_cls=ContextVersion)),
         (ORIGIN, IdentifierField(optional=True))
+    )
+
+
+class SetRsMetaField(MessageValidator):
+    meta = (
+        (RS_META_ID, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (RS_META_TYPE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (RS_META_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (RS_META_VERSION, VersionField(version_cls=RsMetaVersion)),
+    )
+
+
+class GetRsMetaField(MessageValidator):
+    meta = (
+        (RS_META_ID, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT))
     )
 
 
@@ -179,7 +199,7 @@ class ClientGetSchemaOperation(MessageValidator):
     )
 
 
-#Rich Schema
+# Rich Schema =================================================
 class ClientSetContextOperation(MessageValidator):
     context = (
         (TXN_TYPE, ConstantField(SET_CONTEXT)),
@@ -194,6 +214,108 @@ class ClientGetContextOperation(MessageValidator):
         (META, GetContextField()),
     )
 
+
+class ClientSetRsSchemaOperation(MessageValidator):
+    operation = (
+        (TXN_TYPE, ConstantField(SET_RS_SCHEMA)),
+        (RS_META, SetRsMetaField()),
+        (DATA, AnyMapField()),
+    )
+
+
+class ClientSetRsEncodingOperation(MessageValidator):
+    operation = (
+        (TXN_TYPE, ConstantField(SET_RS_ENCODING)),
+        (RS_META, SetRsMetaField()),
+        (DATA, AnyMapField()),
+    )
+
+
+class ClientSetRsMappingOperation(MessageValidator):
+    operation = (
+        (TXN_TYPE, ConstantField(SET_RS_MAPPING)),
+        (RS_META, SetRsMetaField()),
+        (DATA, AnyMapField()),
+    )
+
+
+class ClientSetRsDidDocOperation(MessageValidator):
+    operation = (
+        (TXN_TYPE, ConstantField(SET_RS_DID_DOC)),
+        (RS_META, SetRsMetaField()),
+        (DATA, AnyMapField()),
+    )
+
+
+class CredDefDataField(MessageValidator):
+    data = (
+        (RS_CRED_DEF_SCHEMA_REF, TxnSeqNoField()),
+        (RS_CRED_DEF_MAPPING_REF, TxnSeqNoField()),
+        (RS_CRED_DEF_PUBLIC_KEYS, ClaimDefField()),
+        (RS_CRED_DEF_SIGNATURE_TYPE, LimitedLengthStringField(max_length=SIGNATURE_TYPE_FIELD_LIMIT)),
+        (RS_CRED_DEF_TAG, LimitedLengthStringField(max_length=256)),
+    )
+
+
+class ClientSetRsCredDefOperation(MessageValidator):
+    operation = (
+        (TXN_TYPE, ConstantField(SET_RS_CRED_DEF)),
+        (RS_META, SetRsMetaField()),
+        (DATA, CredDefDataField()),
+    )
+
+
+class ClientSetRsPresDefOperation(MessageValidator):
+    operation = (
+        (TXN_TYPE, ConstantField(SET_RS_PRES_DEF)),
+        (RS_META, SetRsMetaField()),
+        (DATA, AnyMapField()),
+    )
+
+
+class ClientGetRsSchemaOperation(MessageValidator):
+    operation = (
+        (TXN_TYPE, ConstantField(GET_RS_SCHEMA)),
+        (RS_META, GetRsMetaField()),
+    )
+
+
+class ClientGetRsEncodingOperation:
+    operation = (
+        (TXN_TYPE, ConstantField(GET_RS_ENCODING)),
+        (RS_META, GetRsMetaField()),
+    )
+
+
+class ClientGetRsMappingOperation:
+    operation = (
+        (TXN_TYPE, ConstantField(GET_RS_MAPPING)),
+        (RS_META, GetRsMetaField()),
+    )
+
+
+class ClientGetRsDidDocOperation:
+    operation = (
+        (TXN_TYPE, ConstantField(GET_RS_DID_DOC)),
+        (RS_META, GetRsMetaField()),
+    )
+
+
+class ClientGetRsCredDefOperation:
+    operation = (
+        (TXN_TYPE, ConstantField(GET_RS_CRED_DEF)),
+        (RS_META, GetRsMetaField()),
+    )
+
+
+class ClientGetRsPresDefOperation:
+    operation = (
+        (TXN_TYPE, ConstantField(GET_RS_PRES_DEF)),
+        (RS_META, GetRsMetaField()),
+    )
+
+
+# ========================================================
 
 class ClientAttribOperation(MessageValidator):
     schema = (
@@ -468,8 +590,21 @@ class ClientOperationField(PClientOperationField):
         GET_REVOC_REG_DEF: ClientGetRevocRegDefField(),
         GET_REVOC_REG: ClientGetRevocRegField(),
         GET_REVOC_REG_DELTA: ClientGetRevocRegDeltaField(),
-        SET_CONTEXT: ClientSetContextOperation(), #Rich Schema
+        # Rich Schema
+        SET_CONTEXT: ClientSetContextOperation(),
         GET_CONTEXT: ClientGetContextOperation(),
+        SET_RS_SCHEMA: ClientSetRsSchemaOperation(),
+        SET_RS_ENCODING: ClientSetRsEncodingOperation(),
+        SET_RS_MAPPING: ClientSetRsMappingOperation(),
+        SET_RS_DID_DOC: ClientSetRsDidDocOperation(),
+        SET_RS_CRED_DEF: ClientSetRsCredDefOperation(),
+        SET_RS_PRES_DEF: ClientSetRsPresDefOperation(),
+        GET_RS_SCHEMA: ClientGetRsSchemaOperation(),
+        GET_RS_ENCODING: ClientGetRsEncodingOperation(),
+        GET_RS_MAPPING: ClientGetRsMappingOperation(),
+        GET_RS_DID_DOC: ClientGetRsDidDocOperation(),
+        GET_RS_CRED_DEF: ClientGetRsCredDefOperation(),
+        GET_RS_PRES_DEF: ClientGetRsPresDefOperation(),
     }
 
     # TODO: it is a workaround because INDY-338, `operations` must be a class

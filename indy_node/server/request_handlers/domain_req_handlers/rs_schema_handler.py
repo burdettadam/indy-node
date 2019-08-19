@@ -32,24 +32,6 @@ class RsSchemaHandler(WriteRequestHandler):
 
     def static_validation(self, request: Request):
         self._validate_request_type(request)  # is this redundant check, how is this code called if txn type is wrong?
-        if request.operation[RS_META] is None:
-            pass
-        if not isinstance(request.operation[RS_META], dict):
-            pass
-        if request.operation[RS_META][RS_META_TYPE] is None:
-            pass
-        if not isinstance(request.operation[RS_META][RS_META_TYPE], str):
-            pass
-        if request.operation[RS_META][RS_META_NAME] is None:
-            pass
-        if not isinstance(request.operation[RS_META][RS_META_NAME], str):
-            pass
-        if request.operation[RS_META][RS_META_VERSION] is None:
-            pass
-        if not isinstance(request.operation[RS_META][RS_META_VERSION], str):
-            pass
-        if request.operation[RS_DATA] is None:
-            pass
         # TODO: validate operation data
         self._validate(request.operation[RS_META], request.operation[RS_DATA])
 
@@ -60,7 +42,11 @@ class RsSchemaHandler(WriteRequestHandler):
 
         schema, _, _ = self.get_from_state(_id)
         if schema:
-            return False  # updating belongs in a different txn.
+            self.write_req_validator.validate(request,
+                                              [AuthActionEdit(txn_type=SET_RS_SCHEMA,
+                                                              field='*',
+                                                              old_value='*',
+                                                              new_value='*')])
         else:
             self.write_req_validator.validate(request,
                                               [AuthActionAdd(txn_type=SET_RS_SCHEMA,
@@ -85,8 +71,6 @@ class RsSchemaHandler(WriteRequestHandler):
         _id = RsSchemaHandler.make_state_path(did_author, meta[RS_META_NAME], meta[RS_META_VERSION])
         if path_only:
             return _id
-        data.update({RS_JSON_LD_ID: _id})
-        meta.update({RS_META_TYPE: MARKER_RS_SCHEMA})
         value = {
             RS_META: meta,
             RS_DATA: data

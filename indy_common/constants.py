@@ -9,7 +9,7 @@ Environment = NamedTuple("Environment", [
     ("poolLedger", str),
     ("domainLedger", str)
 ])
-
+# RICH SCHEMA
 RS_META = 'meta'
 RS_META_NAME = 'name'
 RS_META_TYPE = 'type'
@@ -17,6 +17,9 @@ RS_META_VERSION = 'version'
 RS_META_ID = 'id'
 RS_DATA = 'data'
 RS_JSON_LD_ID = '@id'
+RS_JSON_LD_TYPE = '@type'
+RS_JSON_LD_CONTEXT = '@context'
+
 # SCHEMA
 RS_SCHEMA_CONTEXT = "@context"
 RS_SCHEMA_TYPE = "@type"
@@ -50,6 +53,16 @@ RS_CRED_DEF_LABEL = "label"
 RS_CRED_DEF_TYPE = "@type"
 RS_CRED_DEF_DOCUMENT = "properties"
 RS_CRED_DEF_CONTEXT = "@context"
+RS_CRED_DEF_SIGNATURE_TYPE = "signature_type"
+RS_CRED_DEF_SCHEMA_REF = "schema_ref"
+RS_CRED_DEF_MAPPING_REF = "mapping_ref"
+RS_CRED_DEF_TAG = "tag"
+RS_CRED_DEF_PUBLIC_KEYS = "data"
+RS_CRED_DEF_FROM = "origin"
+RS_CRED_DEF_PRIMARY = "primary"
+RS_CRED_DEF_REVOCATION = "revocation"
+RS_CRED_DEF_TAG_DEFAULT = "tag"
+RS_CRED_DEF_CL = "CL"
 # PRES_DEF
 RS_PRES_DEF_LABEL = "label"
 RS_PRES_DEF_TYPE = "@type"

@@ -7,11 +7,16 @@ from common.version import (
 from indy_common.constants import APP_NAME
 from indy_common.node_version import NodeVersion
 
-
 NodeVersion = NodeVersion
 
-#Rich Schema
+
+# Rich Schema
 class ContextVersion(DigitDotVersion):
+    def __init__(self, version: str, **kwargs):
+        super().__init__(version, parts_num=(2, 3), **kwargs)
+
+
+class RsMetaVersion(DigitDotVersion):
     def __init__(self, version: str, **kwargs):
         super().__init__(version, parts_num=(2, 3), **kwargs)
 

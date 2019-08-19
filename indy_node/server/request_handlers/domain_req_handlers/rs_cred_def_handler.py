@@ -88,7 +88,7 @@ class RsCredDefHandler(WriteRequestHandler):
                              .format(CLAIM_DEF_PUBLIC_KEYS))
         signature_type = get_txn_claim_def_signature_type(txn)
         tag = get_txn_claim_def_tag(txn)
-        path = ClaimDefHandler.make_state_path_for_claim_def(origin, schema_seq_no, signature_type, tag)
+        path = RsCredDefHandler.make_state_path_for_claim_def(origin, schema_seq_no, signature_type, tag)
         if path_only:
             return path
         seq_no = get_seq_no(txn)
