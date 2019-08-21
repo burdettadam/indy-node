@@ -133,7 +133,7 @@ class SetRsMetaField(MessageValidator):
 
 class GetRsMetaField(MessageValidator):
     meta = (
-        (RS_META_ID, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT))
+        (ID, NonEmptyStringField()),
     )
 
 
@@ -261,7 +261,7 @@ class ClientSetRsCredDefOperation(MessageValidator):
     operation = (
         (TXN_TYPE, ConstantField(SET_RS_CRED_DEF)),
         (RS_META, SetRsMetaField()),
-        (DATA, CredDefDataField()),
+        (DATA,  AnyMapField()),
     )
 
 

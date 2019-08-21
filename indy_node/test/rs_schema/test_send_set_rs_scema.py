@@ -61,3 +61,4 @@ def test_send_schema(looper, sdk_pool_handle, sdk_wallet_endorser):
     })
     req = sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_endorser, txn_json)
     rep = sdk_get_and_check_replies(looper, [req])
+    assert rep[0][1]['result']['txnMetadata']['txnId']

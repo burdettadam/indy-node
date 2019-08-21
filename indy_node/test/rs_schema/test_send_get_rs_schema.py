@@ -78,7 +78,7 @@ def test_get_schema_succeeds(looper, sdk_pool_handle, nodeSet, sdk_wallet_truste
                 RS_META_ID: write_schema
             },
             "identifier": authors_did,
-            "reqId": 1565971763281198852,
+            "reqId": 12345678,
             "protocolVersion": 2
         }})
     req = sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, txn_json)

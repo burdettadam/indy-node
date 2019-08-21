@@ -54,10 +54,10 @@ RS_CRED_DEF_TYPE = "@type"
 RS_CRED_DEF_DOCUMENT = "properties"
 RS_CRED_DEF_CONTEXT = "@context"
 RS_CRED_DEF_SIGNATURE_TYPE = "signature_type"
-RS_CRED_DEF_SCHEMA_REF = "schema_ref"
-RS_CRED_DEF_MAPPING_REF = "mapping_ref"
+RS_CRED_DEF_SCHEMA_REF = "schema"
+RS_CRED_DEF_MAPPING_REF = "mapping"
 RS_CRED_DEF_TAG = "tag"
-RS_CRED_DEF_PUBLIC_KEYS = "data"
+RS_CRED_DEF_PUBLIC_KEYS = "public_keys"
 RS_CRED_DEF_FROM = "origin"
 RS_CRED_DEF_PRIMARY = "primary"
 RS_CRED_DEF_REVOCATION = "revocation"
@@ -183,9 +183,10 @@ allOpKeys = (
     SIGNATURE_TYPE,
     FORCE,
     WRITES,
-    REINSTALL)
+    REINSTALL,
+    RS_META)
 
-reqOpKeys = (TXN_TYPE,)
+reqOpKeys = (TXN_TYPE, RS_META)
 
 # Attribute Names
 ENDPOINT = "endpoint"

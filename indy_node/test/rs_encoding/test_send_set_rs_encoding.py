@@ -3,22 +3,40 @@ import json
 
 from indy.ledger import sign_request, submit_request
 
-from indy_common.constants import SET_RS_SCHEMA, RS_META, RS_META_NAME, RS_META_VERSION, RS_DATA
-from plenum.test.conftest import sdk_wallet_trustee
+from indy_common.constants import RS_META, RS_META_NAME, RS_META_VERSION, RS_DATA, RS_JSON_LD_ID, \
+    RS_META_ID, RS_META_TYPE, SET_RS_ENCODING
+from indy_common.state.state_constants import MARKER_RS_ENCODING
 from plenum.test.helper import sdk_check_reply, sdk_sign_and_submit_req, sdk_get_and_check_replies
 
 
-def test_send_schema(looper, sdk_pool_handle, sdk_wallet_endorser):
+def test_send_encoding(looper, sdk_pool_handle, sdk_wallet_endorser):
     _, requests_did = sdk_wallet_endorser
-    authors_did = requests_did
+    authors_did, name, version, type = requests_did, "ISO18023_Drivers_License", "1.1", MARKER_RS_ENCODING
+    _id = authors_did + ':' + type + ':' + name + ':' + version
     txn_json = json.dumps({
         'operation': {
-            'type': SET_RS_SCHEMA,
+            'type': SET_RS_ENCODING,
             RS_META: {
-                RS_META_NAME: "ISO18023_Drivers_License",
-                RS_META_VERSION: "1.1"
+                RS_META_ID: _id,
+                RS_META_TYPE: MARKER_RS_ENCODING,
+                RS_META_NAME: name,
+                RS_META_VERSION: version
             },
-            RS_DATA: {},
+            RS_DATA: {
+                RS_JSON_LD_ID: _id,
+                'meta': {
+                    'discription': 'this is a test encoding',
+                    'label': 'asdfasdfasdf',
+                    'source': 'did.example.com'
+                },
+                'test_vectors': {
+                    'simple': {
+                        'input': 'YOLO',
+                        'output': 123456
+                    }
+                },
+                'pseudo_code': 'just output 123456'
+            }
         },
         "identifier": authors_did,
         "reqId": 1565971763281198952,
@@ -26,6 +44,4 @@ def test_send_schema(looper, sdk_pool_handle, sdk_wallet_endorser):
     })
     req = sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_endorser, txn_json)
     rep = sdk_get_and_check_replies(looper, [req])
-
-    # sign_txn_json = asyncio.ensure_future(sign_request(sdk_wallet_trustee, authors_did, txn_json))
-    # sdk_check_reply(asyncio.ensure_future(submit_request(sdk_pool_handle, sign_txn_json)))
+    assert rep[0][1]['result']['txnMetadata']['txnId']
