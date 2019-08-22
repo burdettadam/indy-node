@@ -31,7 +31,7 @@ CONTEXT_NAME = "name"
 CONTEXT_VERSION = "version"
 CONTEXT_ID = "id"
 CONTEXT_TYPE = 'ctx'
-CONTEXT_CONTEXT = "context"
+CONTEXT_CONTEXT = "@context"
 CONTEXT_FROM = "dest"
 # MAPPING
 RS_MAPPING_LABEL = "label"

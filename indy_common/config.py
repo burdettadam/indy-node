@@ -104,7 +104,6 @@ authPolicy = CONFIG_LEDGER_AUTH_POLICY
 
 SCHEMA_ATTRIBUTES_LIMIT = 125
 # Rich Schema
-# FIX remove this limit when the new context validator is written
-CONTEXT_ATTRIBUTES_LIMIT = 125
-JSON_LD_LIMIT = 125
+JSON_LD_LIMIT = 1500
+CONTEXT_SIZE_LIMIT = 1500
 
