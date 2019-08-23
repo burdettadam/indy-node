@@ -133,7 +133,7 @@ class SetRsMetaField(MessageValidator):
 
 class GetRsMetaField(MessageValidator):
     meta = (
-        (ID, NonEmptyStringField()),
+        (RS_META_ID, NonEmptyStringField()),
     )
 
 

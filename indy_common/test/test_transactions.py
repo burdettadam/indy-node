@@ -85,7 +85,6 @@ def testTransactionEnumDecoded():
     # Rich Schema
     assert IndyTransactions.SET_CONTEXT.name == "SET_CONTEXT"
     assert IndyTransactions.GET_CONTEXT.name == "GET_CONTEXT"
-    assert IndyTransactions.GET_CONTEXT.name == "GET_CONTEXT"
     assert IndyTransactions.SET_RS_SCHEMA.name == "SET_RS_SCHEMA"
     assert IndyTransactions.GET_RS_SCHEMA.name == "GET_RS_SCHEMA"
     assert IndyTransactions.SET_RS_MAPPING.name == "SET_RS_MAPPING"

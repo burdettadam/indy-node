@@ -4,10 +4,9 @@ from typing import Dict
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_constraints import AuthConstraint, AuthConstraintOr, accepted_roles, IDENTITY_OWNER, \
     AuthConstraintForbidden
-from indy_common.constants import ENDORSER, POOL_CONFIG, VALIDATOR_INFO, POOL_UPGRADE, POOL_RESTART, NODE, \
-    CLAIM_DEF, SCHEMA, \
-    SET_RS_MAPPING, SET_RS_SCHEMA, SET_RS_ENCODING, SET_RS_CRED_DEF, SET_RS_DID_DOC, SET_RS_PRES_DEF, SET_CONTEXT, \
-    NYM, ROLE, AUTH_RULE, NETWORK_MONITOR, REVOC_REG_ENTRY, REVOC_REG_DEF, ATTRIB, AUTH_RULES
+from indy_common.constants import ENDORSER, POOL_CONFIG, VALIDATOR_INFO, POOL_UPGRADE, POOL_RESTART, NODE, CLAIM_DEF, \
+    SCHEMA, SET_RS_MAPPING, SET_RS_SCHEMA, SET_RS_ENCODING, SET_RS_CRED_DEF, SET_RS_DID_DOC, SET_RS_PRES_DEF, \
+    SET_CONTEXT, NYM, ROLE, AUTH_RULE, NETWORK_MONITOR, REVOC_REG_ENTRY, REVOC_REG_DEF, ATTRIB, AUTH_RULES
 from plenum.common.constants import TRUSTEE, STEWARD, VERKEY, TXN_AUTHOR_AGREEMENT, TXN_AUTHOR_AGREEMENT_AML
 
 edit_role_actions = {}  # type: Dict[str, Dict[str, AuthActionEdit]]
